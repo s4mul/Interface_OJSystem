@@ -3,8 +3,10 @@ package executor
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
+	"time"
 
 	"judge_server/internal/model"
 )
@@ -39,15 +41,40 @@ func (e *Executor) Execute(request model.ExecutionRequest) (model.ExecutionResul
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
+	//추후 크기제한 필요
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
+	start := time.Now()
 	err := cmd.Run()
+	duration := time.Since(start)
 
 	result := model.ExecutionResult{
-		Stdout: stdout.String(),
-		Stderr: stderr.String(),
+		Stdout:   stdout.String(),
+		Stderr:   stderr.String(),
+		ExitCode: 0,
+		TimeOut:  false,
+		Duration: duration,
 	}
 
-	return result, err
+	//timeout
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		result.TimeOut = true
+		result.ExitCode = -1
+
+		return result, nil
+	}
+
+	if err != nil {
+		var exitErr *exec.ExitError
+
+		if errors.As(err, &exitErr) {
+			result.ExitCode = exitErr.ExitCode()
+
+			return result, nil
+		}
+
+		return result, err
+	}
+	return result, nil
 }
