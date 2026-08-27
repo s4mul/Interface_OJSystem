@@ -61,7 +61,7 @@ int main(void){
 	testcaseNumber := 3
 
 	// TODO: WorkingDir, WorkDir 통일
-	executionRequest := model.ExecutionRequest{
+	executionRequest := model.ExecuteRequest{
 		Command:    compileResult.Command,
 		Args:       compileResult.Args,
 		WorkingDir: compileResult.WorkDir,
@@ -113,8 +113,8 @@ func (w *Worker) compile(
 }
 
 func (w *Worker) execute(
-	request model.ExecutionRequest,
-) (model.ExecutionResult, error) {
+	request model.ExecuteRequest,
+) (model.ExecuteResult, error) {
 
 	return w.executor.Execute(request)
 }
