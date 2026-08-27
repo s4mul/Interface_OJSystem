@@ -5,10 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os/exec"
-	"time"
-
 	"judge_server/internal/model"
+	"os/exec"
+	"strings"
+	"time"
 )
 
 type Executor struct {
@@ -44,6 +44,8 @@ func (e *Executor) Execute(request model.ExecutionRequest) (model.ExecutionResul
 	//추후 크기제한 필요
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	cmd.Stdin = strings.NewReader(request.Stdin)
+	cmd.Dir = request.WorkingDir
 
 	start := time.Now()
 	err := cmd.Run()
