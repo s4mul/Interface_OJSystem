@@ -44,7 +44,7 @@ func (e *Executor) Execute(request model.ExecuteRequest) (model.ExecuteResult, e
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Stdin = strings.NewReader(request.Stdin)
-	cmd.Dir = request.WorkingDir
+	cmd.Dir = request.WorkDir
 
 	start := time.Now()
 	err := cmd.Run()

@@ -12,9 +12,9 @@ type ExecuteResult struct {
 }
 
 type ExecuteRequest struct {
-	Command    string
-	Args       []string
-	WorkingDir string
-	Stdin      string
-	TimeLimit  time.Duration
+	Command   string
+	Args      []string
+	WorkDir   string
+	Stdin     string
+	TimeLimit time.Duration
 }
