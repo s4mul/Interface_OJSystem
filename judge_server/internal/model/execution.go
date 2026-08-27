@@ -3,7 +3,7 @@ package model
 import "time"
 
 //result
-type ExecutionResult struct {
+type ExecuteResult struct {
 	Stdout   string
 	Stderr   string
 	ExitCode int
@@ -11,7 +11,7 @@ type ExecutionResult struct {
 	Duration time.Duration
 }
 
-type ExecutionRequest struct {
+type ExecuteRequest struct {
 	Command    string
 	Args       []string
 	WorkingDir string

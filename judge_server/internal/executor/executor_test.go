@@ -12,7 +12,7 @@ import (
 func TestExecuteSuccess(t *testing.T) {
 	e := New()
 
-	request := model.ExecutionRequest{
+	request := model.ExecuteRequest{
 		Command:   "go",
 		Args:      []string{"version"},
 		TimeLimit: 2 * time.Second,
@@ -40,7 +40,7 @@ func TestExecuteSuccess(t *testing.T) {
 func TestExecuteCommandNotFound(t *testing.T) {
 	e := New()
 
-	request := model.ExecutionRequest{
+	request := model.ExecuteRequest{
 		Command:   "this-command-does-not-exist",
 		TimeLimit: 2 * time.Second,
 	}
@@ -66,7 +66,7 @@ func TestExecuteNonZeroExitCode(t *testing.T) {
 		args = []string{"-c", "exit 3"}
 	}
 
-	request := model.ExecutionRequest{
+	request := model.ExecuteRequest{
 		Command:   command,
 		Args:      args,
 		TimeLimit: 2 * time.Second,
@@ -101,7 +101,7 @@ func TestExecuteTimeout(t *testing.T) {
 		args = []string{"-c", "sleep 2"}
 	}
 
-	request := model.ExecutionRequest{
+	request := model.ExecuteRequest{
 		Command:   command,
 		Args:      args,
 		TimeLimit: 100 * time.Millisecond,
