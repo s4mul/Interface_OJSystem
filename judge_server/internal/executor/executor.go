@@ -18,12 +18,12 @@ func New() *Executor {
 	return &Executor{}
 }
 
-func (e *Executor) Execute(request model.ExecutionRequest) (model.ExecutionResult, error) {
+func (e *Executor) Execute(request model.ExecuteRequest) (model.ExecuteResult, error) {
 	if request.Command == "" {
-		return model.ExecutionResult{}, fmt.Errorf("execution command is empty")
+		return model.ExecuteResult{}, fmt.Errorf("execution command is empty")
 	}
 	if request.TimeLimit <= 0 {
-		return model.ExecutionResult{}, fmt.Errorf("time limit must be greater than zero")
+		return model.ExecuteResult{}, fmt.Errorf("time limit must be greater than zero")
 	}
 	//timer set
 	ctx, cancel := context.WithTimeout(
@@ -41,7 +41,6 @@ func (e *Executor) Execute(request model.ExecutionRequest) (model.ExecutionResul
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	//추후 크기제한 필요
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Stdin = strings.NewReader(request.Stdin)
@@ -51,7 +50,7 @@ func (e *Executor) Execute(request model.ExecutionRequest) (model.ExecutionResul
 	err := cmd.Run()
 	duration := time.Since(start)
 
-	result := model.ExecutionResult{
+	result := model.ExecuteResult{
 		Stdout:   stdout.String(),
 		Stderr:   stderr.String(),
 		ExitCode: 0,
