@@ -20,6 +20,7 @@ func New() *Evaluator {
 }
 
 func (e *Evaluator) Evaluate(request model.EvaluateRequest) (model.EvaluateResult, error) {
+
 	outputPath := filepath.Join(problemDir, strconv.Itoa(request.ProblemID), "output", strconv.Itoa(request.TestCaseID))
 	expectedOutput, err := os.ReadFile(outputPath)
 
