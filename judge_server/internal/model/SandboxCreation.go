@@ -1,8 +1,10 @@
 package model
 
+import "time"
+
 type SandboxRequest struct {
 	MemoryLimitsMb int
-	TimeLimitsMs   int
+	TimeLimitsMs   time.Duration
 	ProcessLimits  int
 	SubmissionID   int
 	Language       string

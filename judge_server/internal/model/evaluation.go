@@ -8,9 +8,8 @@ type EvaluateResult struct {
 }
 
 type EvaluateRequest struct {
-	ProblemID  int
-	TestCaseID int
-	SandboxID  string
+	ProblemID int
+	SandboxID string
 }
 
 type ExecutionConfig struct {
