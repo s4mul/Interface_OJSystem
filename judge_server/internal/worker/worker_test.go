@@ -72,6 +72,42 @@ func requireDocker(t *testing.T) {
 	}
 }
 
+func TestWorkerCleanupAfterProcess(t *testing.T) {
+	w := New(".", "")
+	os.Chdir("../../..")
+	job := model.Job{
+		SubmissionID: 9999,
+		ProblemID:    1,
+		Language:     "C",
+		Source: `
+#include <stdio.h>
+
+int main() {
+	int a, b;
+	scanf("%d %d", &a, &b);
+	printf("%d\n", a + b);
+	return 0;
+}
+`,
+	}
+
+	workDir := filepath.Join(
+		w.root,
+		"sandboxs",
+		strconv.Itoa(job.SubmissionID),
+	)
+
+	_, err := w.process(job)
+	if err != nil {
+		t.Fatalf("process() failed: %v", err)
+	}
+
+	// 작업 디렉터리가 삭제됐는지 확인
+	if _, err := os.Stat(workDir); !os.IsNotExist(err) {
+		t.Fatalf("sandbox work directory still exists: %s", workDir)
+	}
+}
+
 // setupWorkerTest는 Worker 테스트에 필요한 공통 환경을 구성한다.
 //
 // Worker는 root="."을 기준으로 data/problems를 찾으므로
@@ -288,7 +324,7 @@ int main(void) {
 				tc.submissionID,
 			)
 
-			w := New()
+			w := New(".", "")
 
 			job := model.Job{
 				SubmissionID: tc.submissionID,
@@ -500,7 +536,7 @@ else:
 			source: `
 raise RuntimeError("test")
 `,
-			expectedVerdict: "CE",
+			expectedVerdict: "RE",
 		},
 
 		{
@@ -510,7 +546,7 @@ raise RuntimeError("test")
 			source: `
 print(
 `,
-			expectedVerdict: "RE",
+			expectedVerdict: "CE",
 		},
 	}
 
@@ -522,7 +558,7 @@ print(
 				tc.submissionID,
 			)
 
-			w := New()
+			w := New(".", "")
 
 			job := model.Job{
 				SubmissionID: tc.submissionID,

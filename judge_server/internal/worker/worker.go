@@ -18,9 +18,9 @@ import (
 )
 
 const queueSize = 100
-const root = "."
 
 type Worker struct {
+	root       string
 	executor   *executor.Executor
 	compiler   *compiler.Compiler
 	evaluator  *evaluator.Evaluator
@@ -30,12 +30,13 @@ type Worker struct {
 	filereader *filereader.FileReader
 }
 
-func New() *Worker {
+func New(root string, reportURL string) *Worker {
 	return &Worker{
+		root:       root,
 		executor:   executor.New(),
 		compiler:   compiler.New(),
 		evaluator:  evaluator.New(root),
-		reporter:   reporter.New(),
+		reporter:   reporter.New(reportURL),
 		queue:      queue.New(queueSize),
 		sandbox:    sandbox.New(),
 		filereader: filereader.New(root),
@@ -113,7 +114,17 @@ func (w *Worker) process(job model.Job) (string, error) {
 			err,
 		)
 	}
-	defer w.sandbox.Cleanup(sandboxRes.ContainerId)
+	defer func() {
+		if err := w.sandbox.Cleanup(
+			sandboxRes.ContainerId,
+			sandboxReq.WorkDir,
+		); err != nil {
+			fmt.Printf(
+				"failed to cleanup sandbox: %v\n",
+				err,
+			)
+		}
+	}()
 
 	//3-1 샌드박스 시작
 	ctx, cancel := context.WithTimeout(
@@ -225,7 +236,7 @@ func (w *Worker) buildSandboxRequest(
 		Language:       job.Language,
 
 		WorkDir: filepath.Join(
-			root,
+			w.root,
 			"sandboxes",
 			strconv.Itoa(job.SubmissionID),
 		),
@@ -270,9 +281,4 @@ func (w *Worker) buildExecutionConfig(
 // Push는 외부에서 전달받은 Job을 Worker의 Queue에 추가한다.
 func (w *Worker) Push(job model.Job) {
 	w.queue.Push(job)
-}
-
-// 테스트에서 Reporter가 사용할 HTTP 서버 주소를 변경한다.
-func (w *Worker) SetReporterURL(url string) {
-	w.reporter.SetURL(url)
 }

@@ -18,7 +18,7 @@ RE — Runtime Error
 TLE — Time Limit Exceeded
 MLE — Memory Limit Exceeded
 OLE — Output Limit Exceeded
-JE — Judge Erro
+JE — Judge Error
 */
 
 type Reporter struct {
@@ -26,15 +26,16 @@ type Reporter struct {
 	url    string
 }
 
-func New() *Reporter {
+func New(url string) *Reporter {
 	return &Reporter{
 		client: &http.Client{
 			Timeout: 3 * time.Second,
 		},
+		url: url,
 	}
 }
-func (r *Reporter) Report(request model.ReportRequest) error {
 
+func (r *Reporter) Report(request model.ReportRequest) error {
 	result := model.ReportPayload{
 		SubmissionID: request.SubmissionID,
 		Result:       request.Result,
@@ -46,28 +47,22 @@ func (r *Reporter) Report(request model.ReportRequest) error {
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
-	client := &http.Client{
-		Timeout: 3 * time.Second,
-	}
-
-	resp, err := client.Post(
+	resp, err := r.client.Post(
 		r.url,
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to send report: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("report failed: status code %d", resp.StatusCode)
+		return fmt.Errorf(
+			"report failed: status code %d",
+			resp.StatusCode,
+		)
 	}
 
 	return nil
-}
-
-func (r *Reporter) SetURL(url string) {
-	r.url = url
 }

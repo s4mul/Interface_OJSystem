@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -146,11 +147,49 @@ func (s *Sandbox) Kill(containerID string) error {
 
 // 실행 중인 경우에도 강제 종료하고 컨테이너를 삭제한다.
 // 호스트의 제출 작업 폴더는 삭제하지 않는다.
-func (s *Sandbox) Cleanup(containerID string) error {
-	_, err := runControlCommand("rm", "-f", containerID)
-	if err != nil {
-		return fmt.Errorf("cleanup sandbox: %w", err)
+func (s *Sandbox) Cleanup(
+	containerID string,
+	workDir string,
+) error {
+
+	var cleanupErrs []error
+
+	// 1. 실행 중인 경우에도 강제 종료하고 컨테이너를 삭제한다.
+	if containerID != "" {
+		_, err := runControlCommand(
+			"rm",
+			"-f",
+			containerID,
+		)
+
+		if err != nil {
+			cleanupErrs = append(
+				cleanupErrs,
+				fmt.Errorf(
+					"remove container: %w",
+					err,
+				),
+			)
+		}
 	}
+
+	// 2. 제출에 사용한 호스트 작업 디렉터리를 삭제한다.
+	if workDir != "" {
+		if err := os.RemoveAll(workDir); err != nil {
+			cleanupErrs = append(
+				cleanupErrs,
+				fmt.Errorf(
+					"remove work directory: %w",
+					err,
+				),
+			)
+		}
+	}
+
+	if len(cleanupErrs) > 0 {
+		return errors.Join(cleanupErrs...)
+	}
+
 	return nil
 }
 
