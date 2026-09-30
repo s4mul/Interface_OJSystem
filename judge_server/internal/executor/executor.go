@@ -59,7 +59,6 @@ func (e *Executor) Execute(request model.ExecuteRequest) (model.ExecuteResult, e
 		"timeout",
 		"-k", "1s",
 		request.TimeLimit.String(),
-		fmt.Sprintf("%.9fs", request.TimeLimit.Seconds()),
 		request.Command,
 	)
 
@@ -77,7 +76,6 @@ func (e *Executor) Execute(request model.ExecuteRequest) (model.ExecuteResult, e
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Stdin = strings.NewReader(request.Stdin)
-	cmd.Dir = request.WorkDir
 
 	start := time.Now()
 	runErr := cmd.Run()

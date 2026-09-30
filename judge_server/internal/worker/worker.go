@@ -135,12 +135,20 @@ func (w *Worker) process(job model.Job) (string, error) {
 	// TODO: 채점 종료 시 샌드박스 상태 확인 및 삭제.
 	// 4. 생성된 샌드박스에서 컴파일
 
-	compileRes, err := w.compiler.Compile(model.CompileRequest{
-		Language:    job.Language,
-		Source:      job.Source,
-		WorkDir:     filepath.Join(root, "judge_server", "sandboxs", strconv.Itoa(job.SubmissionID)),
-		ContainerID: sandboxRes.ContainerId,
-	})
+	compileRes, err := w.compiler.Compile(
+		model.CompileRequest{
+			Language:    job.Language,
+			Source:      job.Source,
+			WorkDir:     sandboxReq.WorkDir,
+			ContainerID: sandboxRes.ContainerId,
+		},
+	)
+	if err != nil {
+		return "", fmt.Errorf(
+			"failed to compile submission: %w",
+			err,
+		)
+	}
 
 	if !compileRes.Success {
 		return "CE", nil
@@ -154,7 +162,7 @@ func (w *Worker) process(job model.Job) (string, error) {
 
 	// 5. 실행 설정을 구성한다.
 	executionConf := w.buildExecutionConfig(
-		job,
+		compileRes,
 		sandboxRes.ContainerId,
 		sandboxReq.TimeLimitsMs,
 	)
@@ -196,6 +204,7 @@ func (w *Worker) buildSandboxRequest(
 		ProcessLimits:  16,
 		SubmissionID:   job.SubmissionID,
 		Language:       job.Language,
+
 		WorkDir: filepath.Join(
 			root,
 			"sandboxes",
@@ -203,37 +212,12 @@ func (w *Worker) buildSandboxRequest(
 		),
 	}
 
-	// TODO: 컴파일 명령어를 샌드박스 내부에서 실행하고
-	// 컴파일 결과를 별도로 확인하도록 구현한다.
 	switch job.Language {
 
-	case "C":
-		req.Command = "gcc"
-		req.Args = []string{
-			"main.c",
-			"-o",
-			"main",
-		}
-
-	case "C++":
-		req.Command = "g++"
-		req.Args = []string{
-			"main.cpp",
-			"-o",
-			"main",
-		}
-
-	case "Java":
-		req.Command = "javac"
-		req.Args = []string{
-			"Main.java",
-		}
+	case "C", "C++", "Java":
 
 	case "python", "Python":
-		// Sandbox의 언어 매핑에 맞춰 소문자로 통일한다.
 		req.Language = "python"
-		req.Command = ""
-		req.Args = []string{}
 
 	default:
 		return model.SandboxRequest{},
@@ -248,27 +232,17 @@ func (w *Worker) buildSandboxRequest(
 
 // buildExecutionConfig는 컨테이너 실행에 필요한 설정을 구성한다.
 func (w *Worker) buildExecutionConfig(
-	job model.Job,
+	compileRes model.CompileResult,
 	containerID string,
 	timeLimit time.Duration,
 ) model.ExecutionConfig {
 
 	return model.ExecutionConfig{
-		Command: "docker",
-
-		Args: []string{
-			"exec",
-			"-i",
-			containerID,
-		},
-
-		WorkDir: filepath.Join(
-			root,
-			"sandboxes",
-			strconv.Itoa(job.SubmissionID),
-		),
-
-		TimeLimit: timeLimit,
+		ContainerID: containerID,
+		Command:     compileRes.Command,
+		Args:        compileRes.Args,
+		WorkDir:     compileRes.WorkDir,
+		TimeLimit:   timeLimit,
 	}
 }
 

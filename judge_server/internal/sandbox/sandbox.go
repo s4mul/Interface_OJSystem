@@ -42,24 +42,25 @@ func (s *Sandbox) Create(request model.SandboxRequest) (model.SandboxResult, err
 		)
 	}
 
-	if request.Command == "" {
-		return model.SandboxResult{}, fmt.Errorf("sandbox command is empty")
-	}
-
 	if request.MemoryLimitsMb <= 0 || request.ProcessLimits <= 0 {
 		return model.SandboxResult{}, fmt.Errorf("sandbox limits must be positive")
 	}
 
-	// judge_server에서 실행한다는 전제로 제출별 절대 경로를 만든다.
-	workDir, err := filepath.Abs(
-		filepath.Join("sandboxs", strconv.Itoa(request.SubmissionID)),
-	)
+	workDir, err := filepath.Abs(request.WorkDir)
 	if err != nil {
-		return model.SandboxResult{}, fmt.Errorf("resolve sandbox path: %w", err)
+		return model.SandboxResult{},
+			fmt.Errorf(
+				"resolve sandbox path: %w",
+				err,
+			)
 	}
 
 	if err := os.MkdirAll(workDir, 0755); err != nil {
-		return model.SandboxResult{}, fmt.Errorf("create sandbox directory: %w", err)
+		return model.SandboxResult{},
+			fmt.Errorf(
+				"create sandbox directory: %w",
+				err,
+			)
 	}
 
 	memory := strconv.Itoa(request.MemoryLimitsMb) + "m"
@@ -76,7 +77,6 @@ func (s *Sandbox) Create(request model.SandboxRequest) (model.SandboxResult, err
 		image,
 		"sleep", "infinity",
 	}
-	args = append(args, request.Args...)
 
 	cmd := exec.Command("docker", args...)
 

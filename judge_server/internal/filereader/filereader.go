@@ -90,7 +90,7 @@ func (p *FileReader) ReadLimits(problemID int) (Limits, error) {
 
 func (p *FileReader) CountTestCases(problemID int) (int, error) {
 	entries, err := os.ReadDir(
-		filepath.Join(p.problemDir, "input", strconv.Itoa(problemID)),
+		filepath.Join(p.problemDir, strconv.Itoa(problemID), "input"),
 	)
 	if err != nil {
 		return 0, err
