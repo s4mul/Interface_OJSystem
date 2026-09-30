@@ -3,18 +3,22 @@ package model
 import "time"
 
 //result
-type ExecutionResult struct {
-	Stdout   string
-	Stderr   string
-	ExitCode int
-	TimeOut  bool
-	Duration time.Duration
+type ExecuteResult struct {
+	Stdout              string
+	Stderr              string
+	ExitCode            int
+	TimeOut             bool
+	OOMKilled           bool
+	OutputLimitExceeded bool
+	Duration            time.Duration
 }
 
-type ExecutionRequest struct {
-	Command    string
-	Args       []string
-	WorkingDir string
-	Stdin      string
-	TimeLimit  time.Duration
+type ExecuteRequest struct {
+	ContainerID      string
+	Command          string
+	Args             []string
+	WorkDir          string
+	Stdin            string
+	TimeLimit        time.Duration
+	OutputLimitBytes int64
 }
