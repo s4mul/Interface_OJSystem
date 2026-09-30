@@ -165,6 +165,7 @@ func (w *Worker) process(job model.Job) (string, error) {
 		compileRes,
 		sandboxRes.ContainerId,
 		sandboxReq.TimeLimitsMs,
+		limits.OutputLimitKb,
 	)
 
 	// 6. 테스트케이스를 평가한다.
@@ -178,6 +179,24 @@ func (w *Worker) process(job model.Job) (string, error) {
 			"failed to evaluate submission: %w",
 			err,
 		)
+	}
+
+	if evalRes.Verdict == "RE" && evalRes.ExitCode == 137 { //MLE 여부를 확인
+
+		state, err := w.sandbox.Inspect(
+			sandboxRes.ContainerId,
+		)
+
+		if err != nil {
+			return "", fmt.Errorf(
+				"failed to inspect sandbox: %w",
+				err,
+			)
+		}
+
+		if state.OOMKilled {
+			return "MLE", nil
+		}
 	}
 
 	// 7. 최종 채점 결과를 반환한다.
@@ -235,14 +254,16 @@ func (w *Worker) buildExecutionConfig(
 	compileRes model.CompileResult,
 	containerID string,
 	timeLimit time.Duration,
+	outputLimitKb int,
 ) model.ExecutionConfig {
 
 	return model.ExecutionConfig{
-		ContainerID: containerID,
-		Command:     compileRes.Command,
-		Args:        compileRes.Args,
-		WorkDir:     compileRes.WorkDir,
-		TimeLimit:   timeLimit,
+		ContainerID:      containerID,
+		Command:          compileRes.Command,
+		Args:             compileRes.Args,
+		WorkDir:          compileRes.WorkDir,
+		TimeLimit:        timeLimit,
+		OutputLimitBytes: int64(outputLimitKb) * 1024,
 	}
 }
 

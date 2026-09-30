@@ -3,8 +3,9 @@ package model
 import "time"
 
 type EvaluateResult struct {
-	Result  bool
-	Verdict string
+	Result   bool
+	Verdict  string
+	ExitCode int
 }
 
 type EvaluateRequest struct {
@@ -13,9 +14,10 @@ type EvaluateRequest struct {
 }
 
 type ExecutionConfig struct {
-	ContainerID string
-	Command     string
-	Args        []string
-	WorkDir     string
-	TimeLimit   time.Duration
+	ContainerID      string
+	Command          string
+	Args             []string
+	WorkDir          string
+	TimeLimit        time.Duration
+	OutputLimitBytes int64
 }

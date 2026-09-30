@@ -65,12 +65,13 @@ func (e *Evaluator) Evaluate(
 		// Judge에서 전달받은 실행 환경을 사용한다.
 		// 테스트케이스마다 Stdin만 변경한다.
 		executeRequest := model.ExecuteRequest{
-			ContainerID: config.ContainerID,
-			Command:     config.Command,
-			Args:        config.Args,
-			WorkDir:     config.WorkDir,
-			TimeLimit:   config.TimeLimit,
-			Stdin:       input,
+			ContainerID:      config.ContainerID,
+			Command:          config.Command,
+			Args:             config.Args,
+			WorkDir:          config.WorkDir,
+			TimeLimit:        config.TimeLimit,
+			Stdin:            input,
+			OutputLimitBytes: config.OutputLimitBytes,
 		}
 
 		executeResult, err := e.executor.Execute(executeRequest)
@@ -81,24 +82,25 @@ func (e *Evaluator) Evaluate(
 				err,
 			)
 		}
-
-		// 시간 초과.
+		// 출력 초과
+		if executeResult.OutputLimitExceeded {
+			res.Verdict = "OLE"
+			return res, nil
+		}
+		// 시간 초과
 		if executeResult.TimeOut {
 			res.Verdict = "TLE"
 			return res, nil
 		}
 
-		// TODO:
-		// 테스트케이스별 OOM 감지 기능을 연결한 뒤
-		// ExecuteResult.OOMKilled 기반으로 MLE 판정 추가.
-
-		// 비정상 종료.
+		// 비정상 종료
 		if executeResult.ExitCode != 0 {
 			res.Verdict = "RE"
+			res.ExitCode = executeResult.ExitCode //RE + 137로 결과 반납했을 때 worker에서 센드박스 확인하는 식으로 MLE 확인
 			return res, nil
 		}
 
-		// 출력 비교.
+		// 출력 비교
 		if !e.checker.CheckSame(
 			expectedOutput,
 			executeResult.Stdout,
@@ -108,7 +110,7 @@ func (e *Evaluator) Evaluate(
 		}
 	}
 
-	// 모든 테스트케이스 통과.
+	// 모든 테스트케이스 통과
 	res.Result = true
 	res.Verdict = "AC"
 

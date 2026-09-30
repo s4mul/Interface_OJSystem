@@ -70,11 +70,16 @@ func (e *Executor) Execute(request model.ExecuteRequest) (model.ExecuteResult, e
 		args...,
 	)
 
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
+	stdout := newLimitedBuffer(
+		request.OutputLimitBytes,
+	)
 
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	stderr := newLimitedBuffer(
+		request.OutputLimitBytes,
+	)
+
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
 	cmd.Stdin = strings.NewReader(request.Stdin)
 
 	start := time.Now()
@@ -89,6 +94,11 @@ func (e *Executor) Execute(request model.ExecuteRequest) (model.ExecuteResult, e
 		TimeOut:   false,
 		Duration:  duration,
 	}
+
+	result.Stdout = stdout.String()
+	result.Stderr = stderr.String()
+
+	result.OutputLimitExceeded = stdout.Exceeded() || stderr.Exceeded()
 
 	// Go Context의 제한 시간이 초과된 경우.
 	// Docker CLI 실행에 문제가 발생한 것으로 처리한다.
@@ -125,4 +135,55 @@ func (e *Executor) Execute(request model.ExecuteRequest) (model.ExecuteResult, e
 	}
 
 	return result, nil
+}
+
+type limitedBuffer struct {
+	buffer   bytes.Buffer
+	limit    int64
+	written  int64
+	exceeded bool
+}
+
+func newLimitedBuffer(limit int64) *limitedBuffer {
+	return &limitedBuffer{
+		limit: limit,
+	}
+}
+
+// 서버 메모리 관리를 위해 임계값 이상으로 쓰지 않음
+func (b *limitedBuffer) Write(p []byte) (int, error) {
+	originalLen := len(p)
+
+	remaining := b.limit - b.written
+
+	if remaining <= 0 {
+		b.exceeded = true
+
+		// 계속 읽어주되 저장하지 않는다.
+		return originalLen, nil
+	}
+
+	if int64(len(p)) > remaining {
+		_, _ = b.buffer.Write(
+			p[:int(remaining)],
+		)
+
+		b.written += remaining
+		b.exceeded = true
+
+		return originalLen, nil
+	}
+
+	n, err := b.buffer.Write(p)
+	b.written += int64(n)
+
+	return originalLen, err
+}
+
+func (b *limitedBuffer) String() string {
+	return b.buffer.String()
+}
+
+func (b *limitedBuffer) Exceeded() bool {
+	return b.exceeded
 }
