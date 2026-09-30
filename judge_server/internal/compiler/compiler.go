@@ -56,17 +56,6 @@ func (c *Compiler) Compile(
 	// /work에 마운트된 파일 이름을 사용한다.
 	fileName := filepath.Base(filePath)
 
-	// Python은 별도의 컴파일 과정이 없다.
-	if request.Language == "Python" ||
-		request.Language == "python" {
-
-		result.Success = true
-		result.Command = "python3"
-		result.Args = []string{fileName}
-
-		return result, nil
-	}
-
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
 		compilerTimeout,
@@ -120,6 +109,36 @@ func (c *Compiler) Compile(
 
 		result.Command = "java"
 		result.Args = []string{"Main"}
+
+	case "Python":
+		cmd := exec.CommandContext(
+			ctx,
+			"docker",
+			"exec",
+			request.ContainerID,
+			"python3",
+			"-m",
+			"py_compile",
+			"/work/main.py",
+		)
+
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
+
+		err := cmd.Run()
+
+		if err != nil {
+			result.Success = false
+			result.Stderr = stderr.String()
+			return result, nil
+		}
+
+		result.Success = true
+		result.Command = "python3"
+		result.Args = []string{"main.py"}
+		result.WorkDir = "/work"
+
+		return result, nil
 
 	default:
 		return result, fmt.Errorf(

@@ -500,11 +500,9 @@ else:
 			source: `
 raise RuntimeError("test")
 `,
-			expectedVerdict: "RE",
+			expectedVerdict: "CE",
 		},
 
-		// 현재 Python은 별도의 compile 단계를 거치지 않는다.
-		// 따라서 SyntaxError도 실행 단계에서 발생하여 RE가 된다.
 		{
 			name:         "Python_SyntaxError",
 			submissionID: 1403,
