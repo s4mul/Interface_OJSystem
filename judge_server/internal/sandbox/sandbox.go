@@ -74,7 +74,7 @@ func (s *Sandbox) Create(request model.SandboxRequest) (model.SandboxResult, err
 		"--mount", "type=bind,src=" + workDir + ",dst=/work",
 		"--workdir", "/work",
 		image,
-		request.Command,
+		"sleep", "infinity",
 	}
 	args = append(args, request.Args...)
 
@@ -105,7 +105,7 @@ func (s *Sandbox) BuildStartCommand(
 ) *exec.Cmd {
 	return exec.CommandContext(
 		ctx,
-		"docker", "start", "-a", "-i", containerID,
+		"docker", "start", containerID,
 	)
 }
 

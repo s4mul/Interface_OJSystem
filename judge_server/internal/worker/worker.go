@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -17,7 +18,7 @@ import (
 )
 
 const queueSize = 100
-const root = "judge_server"
+const root = "."
 
 type Worker struct {
 	executor   *executor.Executor
@@ -99,19 +100,51 @@ func (w *Worker) process(job model.Job) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	sandboxReq.WorkDir, err = filepath.Abs(sandboxReq.WorkDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve work directory: %w", err)
+	}
 
 	// 3. 샌드박스를 생성한다.
 	sandboxRes, err := w.sandbox.Create(sandboxReq)
-
 	if err != nil {
 		return "", fmt.Errorf(
 			"failed to create sandbox: %w",
 			err,
 		)
 	}
+	defer w.sandbox.Cleanup(sandboxRes.ContainerId)
+
+	//3-1 샌드박스 시작
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		10*time.Second,
+	)
+
+	cmd := w.sandbox.BuildStartCommand(
+		ctx,
+		sandboxRes.ContainerId,
+	)
+	err = cmd.Run()
+	cancel()
+
+	if err != nil {
+		return "", fmt.Errorf("failed to start sandbox: %w", err)
+	}
 
 	// TODO: 채점 종료 시 샌드박스 상태 확인 및 삭제.
-	// TODO: 컴파일 결과에 따른 CE 판정 처리.
+	// 4. 생성된 샌드박스에서 컴파일
+
+	compileRes, err := w.compiler.Compile(model.CompileRequest{
+		Language:    job.Language,
+		Source:      job.Source,
+		WorkDir:     filepath.Join(root, "judge_server", "sandboxs", strconv.Itoa(job.SubmissionID)),
+		ContainerID: sandboxRes.ContainerId,
+	})
+
+	if !compileRes.Success {
+		return "CE", nil
+	}
 
 	// 4. 평가 요청을 구성한다.
 	evaluateReq := model.EvaluateRequest{
@@ -163,7 +196,11 @@ func (w *Worker) buildSandboxRequest(
 		ProcessLimits:  16,
 		SubmissionID:   job.SubmissionID,
 		Language:       job.Language,
-		WorkDir:        "",
+		WorkDir: filepath.Join(
+			root,
+			"sandboxes",
+			strconv.Itoa(job.SubmissionID),
+		),
 	}
 
 	// TODO: 컴파일 명령어를 샌드박스 내부에서 실행하고
