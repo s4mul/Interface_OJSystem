@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const JUDGE_SERVER_URL = process.env.JUDGE_SERVER_URL;
 
 // POST /api/submissions
 router.post('/submissions', async (req, res) => {
@@ -55,7 +56,7 @@ router.post('/submissions', async (req, res) => {
 
     return res.status(202).json({
       submissionId,
-      status: 'PENDING'
+      result: "PENDING"
     });
 
   } catch (err) {
