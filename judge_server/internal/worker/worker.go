@@ -30,14 +30,14 @@ type Worker struct {
 	filereader *filereader.FileReader
 }
 
-func New(root string, reportURL string) *Worker {
+func New(root string, reportURL string, q *queue.Queue) *Worker {
 	return &Worker{
 		root:       root,
 		executor:   executor.New(),
 		compiler:   compiler.New(),
 		evaluator:  evaluator.New(root),
 		reporter:   reporter.New(reportURL),
-		queue:      queue.New(queueSize),
+		queue:      q,
 		sandbox:    sandbox.New(),
 		filereader: filereader.New(root),
 	}

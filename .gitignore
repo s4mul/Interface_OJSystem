@@ -1,0 +1,3 @@
+backend/.env.example
+judge_server/.env.example
+backend/node_modules/
