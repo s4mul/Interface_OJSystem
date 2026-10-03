@@ -11,10 +11,16 @@ import (
 	"judge_server/internal/model"
 	"judge_server/internal/queue"
 	"judge_server/internal/worker"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	fmt.Println("OJ Worker starting")
+
+	if err := godotenv.Load(); err != nil {
+		log.Println(".env file not found, using system environment variables")
+	}
 
 	root := os.Getenv("OJ_ROOT")
 	if root == "" {
