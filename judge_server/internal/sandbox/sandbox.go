@@ -17,6 +17,9 @@ import (
 )
 
 type Sandbox struct{}
+
+const sandboxCreateTimeout = 30 * time.Second
+
 type SandboxState struct {
 	Running   bool   `json:"Running"`
 	ExitCode  int    `json:"ExitCode"`
@@ -79,13 +82,25 @@ func (s *Sandbox) Create(request model.SandboxRequest) (model.SandboxResult, err
 		"sleep", "infinity",
 	}
 
-	cmd := exec.Command("docker", args...)
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		sandboxCreateTimeout,
+	)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "docker", args...)
 
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
 	output, err := cmd.Output()
 	if err != nil {
+		if ctx.Err() != nil {
+			return model.SandboxResult{}, fmt.Errorf(
+				"create sandbox timeout: %w",
+				ctx.Err(),
+			)
+		}
 		return model.SandboxResult{}, fmt.Errorf(
 			"create sandbox: %w: %s",
 			err,

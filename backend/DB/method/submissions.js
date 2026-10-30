@@ -1,10 +1,18 @@
 const pool = require('../connection');
 
 // submitted_at은 DB의 DEFAULT CURRENT_TIMESTAMP로 자동 기록합니다.
-async function createSubmission(problemid, userid, status = 'PENDING') {
+async function createSubmission(
+    problemid,
+    userid,
+    language,
+    source,
+    status = 'PENDING'
+) {
     const [result] = await pool.execute(
-        'INSERT INTO submissions (problemid, userid, status) VALUES (?, ?, ?)',
-        [problemid, userid, status]
+        `INSERT INTO submissions
+            (problemid, userid, language, source, status)
+         VALUES (?, ?, ?, ?, ?)`,
+        [problemid, userid, language, source, status]
     );
     return result.insertId;
 }
@@ -26,6 +34,26 @@ async function updateSubmission(submitid, status) {
     return result.affectedRows;
 }
 
+async function getPendingSubmissionIdsBefore(cutoff) {
+    const [rows] = await pool.execute(
+        `SELECT submitid
+         FROM submissions
+         WHERE status = 'PENDING' AND submitted_at <= ?`,
+        [cutoff]
+    );
+    return rows.map((row) => row.submitid);
+}
+
+async function updatePendingSubmission(submitid, status) {
+    const [result] = await pool.execute(
+        `UPDATE submissions
+         SET status = ?
+         WHERE submitid = ? AND status = 'PENDING'`,
+        [status, submitid]
+    );
+    return result.affectedRows;
+}
+
 async function deleteSubmission(submitid) {
     const [result] = await pool.execute(
         'DELETE FROM submissions WHERE submitid = ?',
@@ -34,4 +62,11 @@ async function deleteSubmission(submitid) {
     return result.affectedRows;
 }
 
-module.exports = { createSubmission, getSubmissionById, updateSubmission, deleteSubmission };
+module.exports = {
+    createSubmission,
+    getSubmissionById,
+    updateSubmission,
+    getPendingSubmissionIdsBefore,
+    updatePendingSubmission,
+    deleteSubmission
+};

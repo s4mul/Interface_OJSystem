@@ -24,6 +24,9 @@ func TestReporterReport(t *testing.T) {
 					r.Header.Get("Content-Type"),
 				)
 			}
+			if r.Header.Get("Authorization") != "Bearer test-token" {
+				t.Fatalf("unexpected Authorization header")
+			}
 
 			if err := json.NewDecoder(r.Body).Decode(&received); err != nil {
 				t.Fatalf("failed to decode request body: %v", err)
@@ -34,7 +37,7 @@ func TestReporterReport(t *testing.T) {
 	)
 	defer server.Close()
 
-	r := New(server.URL)
+	r := New(server.URL, "test-token")
 
 	err := r.Report(model.ReportRequest{
 		SubmissionID: 1,
@@ -60,5 +63,33 @@ func TestReporterReport(t *testing.T) {
 
 	if !received.IsSuccess {
 		t.Fatal("expected IsSuccess=true")
+	}
+}
+
+func TestReporterRetries(t *testing.T) {
+	attempts := 0
+
+	server := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			attempts++
+			if attempts < 3 {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+		}),
+	)
+	defer server.Close()
+
+	r := New(server.URL, "test-token")
+	if err := r.Report(model.ReportRequest{
+		SubmissionID: 1,
+		Result:       "AC",
+	}); err != nil {
+		t.Fatalf("Report() failed: %v", err)
+	}
+
+	if attempts != 3 {
+		t.Fatalf("expected 3 attempts, got %d", attempts)
 	}
 }

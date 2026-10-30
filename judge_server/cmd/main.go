@@ -35,12 +35,17 @@ func main() {
 	if backendURL == "" {
 		log.Fatal("BACKEND_URL is not set")
 	}
+	callbackToken := os.Getenv("JUDGE_CALLBACK_TOKEN")
+	if callbackToken == "" {
+		log.Fatal("JUDGE_CALLBACK_TOKEN is not set")
+	}
 
 	reportURL := backendURL + "/api/result"
 	q := queue.New(100)
 	w := worker.New(
 		root,
 		reportURL,
+		callbackToken,
 		q,
 	)
 	go func() {
@@ -64,6 +69,15 @@ func main() {
 			return
 		}
 
+		if req.Header.Get("Authorization") != "Bearer "+callbackToken {
+			http.Error(
+				res,
+				"unauthorized",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+
 		var job model.Job
 
 		if err := json.NewDecoder(req.Body).Decode(&job); err != nil {
@@ -75,7 +89,14 @@ func main() {
 			return
 		}
 
-		q.Push(job)
+		if !q.TryPush(job) {
+			http.Error(
+				res,
+				"judge queue is full",
+				http.StatusServiceUnavailable,
+			)
+			return
+		}
 
 		res.WriteHeader(http.StatusAccepted)
 	})

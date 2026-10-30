@@ -18,6 +18,16 @@ func (q *Queue) Push(job model.Job) {
 	q.jobs <- job
 }
 
+// TryPush는 대기열에 공간이 있을 때만 Job을 추가한다.
+func (q *Queue) TryPush(job model.Job) bool {
+	select {
+	case q.jobs <- job:
+		return true
+	default:
+		return false
+	}
+}
+
 // Pop은 Queue에서 Job 하나를 가져온다.
 // Queue가 비어 있으면 Job이 들어올 때까지 대기한다.
 func (q *Queue) Pop() model.Job {
