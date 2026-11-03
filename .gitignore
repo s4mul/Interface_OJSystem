@@ -1,0 +1,11 @@
+# Local environment files and credentials
+.env
+.env.*
+!.env.example
+
+# Installed dependencies and build output
+node_modules/
+dist/
+
+# Judge runtime work directories
+sandboxes/
