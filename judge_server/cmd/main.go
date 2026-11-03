@@ -35,12 +35,17 @@ func main() {
 	if backendURL == "" {
 		log.Fatal("BACKEND_URL is not set")
 	}
+	callbackToken := os.Getenv("JUDGE_CALLBACK_TOKEN")
+	if callbackToken == "" {
+		log.Fatal("JUDGE_CALLBACK_TOKEN is not set")
+	}
 
 	reportURL := backendURL + "/api/result"
 	q := queue.New(100)
 	w := worker.New(
 		root,
 		reportURL,
+		callbackToken,
 		q,
 	)
 	go func() {
@@ -61,6 +66,11 @@ func main() {
 				"method not allowed",
 				http.StatusMethodNotAllowed,
 			)
+			return
+		}
+
+		if req.Header.Get("Authorization") != "Bearer "+callbackToken {
+			http.Error(res, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 

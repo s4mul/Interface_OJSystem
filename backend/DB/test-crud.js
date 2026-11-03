@@ -204,7 +204,10 @@ async function run() {
         // 7. Submissions
         await check('submissions: CREATE / READ / UPDATE', async () => {
             ids.submission = await submissions.createSubmission(
-                ids.problemA, ids.user
+                ids.problemA,
+                ids.user,
+                'C++',
+                'int main() { return 0; }'
             );
 
             assert.ok(ids.submission > 0);
@@ -214,6 +217,8 @@ async function run() {
             );
 
             assert.equal(saved.status, 'PENDING');
+            assert.equal(saved.language, 'C++');
+            assert.equal(saved.source, 'int main() { return 0; }');
             assert.ok(saved.submitted_at);
 
             assert.equal(
