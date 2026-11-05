@@ -16,6 +16,14 @@ async function getGroupMemberById(idx) {
     return rows[0] ?? null;
 }
 
+async function getGroupMembersByUserId(userid) {
+    const [rows] = await pool.execute(
+        'SELECT * FROM group_members WHERE userid = ?',
+        [userid]
+    );
+    return rows;
+}
+
 async function updateGroupMember(idx, groupid, userid, isadmin) {
     const [result] = await pool.execute(
         'UPDATE group_members SET groupid = ?, userid = ?, isadmin = ? WHERE idx = ?',
@@ -32,4 +40,4 @@ async function deleteGroupMember(idx) {
     return result.affectedRows;
 }
 
-module.exports = { createGroupMember, getGroupMemberById, updateGroupMember, deleteGroupMember };
+module.exports = { createGroupMember, getGroupMemberById, getGroupMembersByUserId, updateGroupMember, deleteGroupMember };
