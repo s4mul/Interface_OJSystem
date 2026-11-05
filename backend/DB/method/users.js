@@ -16,6 +16,14 @@ async function getUserById(userid) {
     return rows[0] ?? null;
 }
 
+async function findUsersByUsername(username) {
+    const [rows] = await pool.execute(
+        'SELECT userid, username FROM users WHERE username = ? LIMIT 2',
+        [username]
+    );
+    return rows;
+}
+
 async function updateUser(userid, username) {
     const [result] = await pool.execute(
         'UPDATE users SET username = ? WHERE userid = ?',
@@ -32,4 +40,4 @@ async function deleteUser(userid) {
     return result.affectedRows;
 }
 
-module.exports = { createUser, getUserById, updateUser, deleteUser };
+module.exports = { createUser, getUserById, findUsersByUsername, updateUser, deleteUser };
