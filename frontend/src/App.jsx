@@ -58,7 +58,7 @@ function App() {
   return (
     <main>
       <h1>Interface OJ</h1>
-      {screen !== 'entry' && <p>사용자 {user.username}</p>}
+      {screen !== 'entry' && <p>사용자 {user.username} (ID: {user.userId})</p>}
 
       {screen === 'entry' && (
         <UserLookupForm initialName={user?.username ?? ''} onUserFound={enter} />
