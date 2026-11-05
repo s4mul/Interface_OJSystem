@@ -15,14 +15,15 @@ CREATE TABLE users (
     userid INT UNSIGNED NOT NULL AUTO_INCREMENT,
     username VARCHAR(100) NOT NULL,
 
-    PRIMARY KEY (userid)
+    PRIMARY KEY (userid),
+    UNIQUE KEY (username)
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
 
 
 -- 2. Groups
-CREATE TABLE `groups` (
+CREATE TABLE user_groups (
     groupid INT UNSIGNED NOT NULL AUTO_INCREMENT,
     groupname VARCHAR(100) NOT NULL,
 
@@ -47,7 +48,7 @@ CREATE TABLE group_members (
 
     CONSTRAINT fk_group_members_group
         FOREIGN KEY (groupid)
-        REFERENCES `groups` (groupid),
+        REFERENCES user_groups (groupid),
 
     CONSTRAINT fk_group_members_user
         FOREIGN KEY (userid)
@@ -75,7 +76,7 @@ CREATE TABLE problems (
 
     CONSTRAINT fk_problems_group
         FOREIGN KEY (groupid)
-        REFERENCES `groups` (groupid),
+        REFERENCES user_groups (groupid),
 
     CONSTRAINT fk_problems_adduser
         FOREIGN KEY (adduser)
@@ -103,7 +104,7 @@ CREATE TABLE problemset (
 
     CONSTRAINT fk_problemset_group
         FOREIGN KEY (groupid)
-        REFERENCES `groups` (groupid),
+        REFERENCES user_groups (groupid),
 
     CONSTRAINT chk_problemset_time_range
         CHECK (

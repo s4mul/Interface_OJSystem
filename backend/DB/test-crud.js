@@ -70,7 +70,7 @@ async function run() {
         });
 
         // 2. Groups
-        await check('groups: CREATE / READ / UPDATE', async () => {
+        await check('user_groups: CREATE / READ / UPDATE', async () => {
             ids.group = await groups.createGroup(`test_group_${suffix}`);
 
             assert.ok(ids.group > 0);
