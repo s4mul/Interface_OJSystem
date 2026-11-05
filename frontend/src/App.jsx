@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import SubmissionPanel from './components/SubmissionPanel'
+import UserLookupForm from './components/UserLookupForm'
 import { previewSubmission } from './api/previewSubmission'
 import './App.css'
 
@@ -34,14 +35,12 @@ const groups = [
 
 function App() {
   const [screen, setScreen] = useState('entry')
-  const [name, setName] = useState('')
+  const [user, setUser] = useState(null)
   const [group, setGroup] = useState(null)
   const [problem, setProblem] = useState(null)
 
-  function enter(event) {
-    event.preventDefault()
-    if (!name.trim()) return
-    setName(name.trim())
+  function enter(matchedUser) {
+    setUser(matchedUser)
     setScreen('groups')
   }
 
@@ -59,21 +58,10 @@ function App() {
   return (
     <main>
       <h1>Interface OJ</h1>
-      {screen !== 'entry' && <p>사용자 {name}</p>}
+      {screen !== 'entry' && <p>사용자 {user.username}</p>}
 
       {screen === 'entry' && (
-        <form onSubmit={enter}>
-          <h2>사용자 이름 입력</h2>
-          <label htmlFor="username">이름 </label>
-          <input
-            id="username"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            required
-          />
-          {' '}
-          <button type="submit" disabled={!name.trim()}>들어가기</button>
-        </form>
+        <UserLookupForm initialName={user?.username ?? ''} onUserFound={enter} />
       )}
 
       {screen === 'groups' && (
