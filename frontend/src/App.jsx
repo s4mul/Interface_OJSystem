@@ -1,33 +1,141 @@
+import { useState } from 'react'
 import SubmissionPanel from './components/SubmissionPanel'
+import { previewSubmission } from './api/previewSubmission'
 import './App.css'
 
-// 1회차 고정 문제 정보
-const PROBLEM = {
-  id: 1,
-  title: 'A+B',
-  description: '두 정수를 입력받아 합을 출력하세요.',
-}
+const groups = [
+  {
+    id: 1,
+    name: 'admin',
+    problems: [{
+      id: 1,
+      title: 'A+B',
+      description: '두 정수를 입력받아 합을 출력하세요.',
+      input: '한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.',
+      output: 'A와 B의 합을 출력합니다.',
+      sampleInput: '2 3',
+      sampleOutput: '5',
+    }],
+  },
+  {
+    id: 2,
+    name: '연습 그룹',
+    problems: [{
+      id: 2,
+      title: '큰 수 찾기',
+      description: '두 정수 중 큰 수를 출력하세요.',
+      input: '한 줄에 두 정수가 공백으로 구분되어 주어집니다.',
+      output: '두 정수 중 큰 값을 출력합니다.',
+      sampleInput: '4 9',
+      sampleOutput: '9',
+    }],
+  },
+]
 
 function App() {
+  const [screen, setScreen] = useState('entry')
+  const [name, setName] = useState('')
+  const [group, setGroup] = useState(null)
+  const [problem, setProblem] = useState(null)
+
+  function enter(event) {
+    event.preventDefault()
+    if (!name.trim()) return
+    setName(name.trim())
+    setScreen('groups')
+  }
+
+  function selectGroup(item) {
+    setGroup(item)
+    setProblem(null)
+    setScreen('list')
+  }
+
+  function openProblem(item) {
+    setProblem(item)
+    setScreen('detail')
+  }
+
   return (
-    <div>
-      <header>
-        <h1>Interface OJ</h1>
-      </header>
+    <main>
+      <h1>Interface OJ</h1>
+      {screen !== 'entry' && <p>사용자 {name}</p>}
 
-      {/* 문제 정보 영역 */}
-      <section>
-        <h2>
-          문제 {PROBLEM.id}.
-        </h2>
-        <h3>
-          {PROBLEM.title}
-        </h3>
-        <p>{PROBLEM.description}</p>
-      </section>
+      {screen === 'entry' && (
+        <form onSubmit={enter}>
+          <h2>사용자 이름 입력</h2>
+          <label htmlFor="username">이름 </label>
+          <input
+            id="username"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            required
+          />
+          {' '}
+          <button type="submit" disabled={!name.trim()}>들어가기</button>
+        </form>
+      )}
 
-      <SubmissionPanel problemId={PROBLEM.id} />
-    </div>
+      {screen === 'groups' && (
+        <section>
+          <h2>그룹 선택</h2>
+          <ul>
+            {groups.map((item) => (
+              <li key={item.id}>
+                <button type="button" onClick={() => selectGroup(item)}>{item.name}</button>
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={() => setScreen('entry')}>이름 입력으로 돌아가기</button>
+        </section>
+      )}
+
+      {screen === 'list' && (
+        <section>
+          <h2>문제 목록</h2>
+          <p>그룹 {group.name}</p>
+          <ul>
+            {group.problems.map((item) => (
+              <li key={item.id}>
+                <button type="button" onClick={() => openProblem(item)}>{item.id}. {item.title}</button>
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={() => setScreen('groups')}>그룹 선택으로 돌아가기</button>
+        </section>
+      )}
+
+      {screen === 'detail' && (
+        <section>
+          <h2>{problem.id}. {problem.title}</h2>
+          <h3>문제</h3>
+          <p>{problem.description}</p>
+          <h3>입력</h3>
+          <p>{problem.input}</p>
+          <h3>출력</h3>
+          <p>{problem.output}</p>
+          <h3>예제 입력</h3>
+          <pre>{problem.sampleInput}</pre>
+          <h3>예제 출력</h3>
+          <pre>{problem.sampleOutput}</pre>
+          <button type="button" onClick={() => setScreen('list')}>문제 목록</button>
+          {' '}
+          <button type="button" onClick={() => setScreen('submit')}>코드 제출 화면으로</button>
+        </section>
+      )}
+
+      {screen === 'submit' && (
+        <section>
+          <p>{problem.id}. {problem.title}</p>
+          <SubmissionPanel
+            problemId={problem.id}
+            transport={previewSubmission}
+            onBackToList={() => setScreen('list')}
+          />
+          <p><button type="button" onClick={() => setScreen('detail')}>문제 상세</button></p>
+        </section>
+      )}
+    </main>
   )
 }
 

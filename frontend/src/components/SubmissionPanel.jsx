@@ -3,7 +3,9 @@ import { submitCode, subscribeToSubmission } from '../api/submissions'
 
 const LANGUAGES = ['C', 'C++', 'Java', 'Python']
 
-function SubmissionPanel({ problemId }) {
+const liveSubmission = { submitCode, subscribeToSubmission }
+
+function SubmissionPanel({ problemId, transport = liveSubmission, onBackToList }) {
   const [language, setLanguage] = useState('C++')
   const [source, setSource] = useState('')
   const [result, setResult] = useState(null)
@@ -22,13 +24,14 @@ function SubmissionPanel({ problemId }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (!source.trim() || loading) return
     resultStream.current?.close()
     resultStream.current = null
     setLoading(true)
     setResult(null)
 
     try {
-      const responseData = await submitCode({
+      const responseData = await transport.submitCode({
         problemId,
         language,
         source,
@@ -39,13 +42,13 @@ function SubmissionPanel({ problemId }) {
       setResult(responseData)
 
       if (responseData.result === 'PENDING') {
-        resultStream.current = subscribeToSubmission(
+        resultStream.current = transport.subscribeToSubmission(
           responseData.submissionId,
-          (finalResult) => {
+          (update) => {
             if (!active.current) return
 
-            setResult(finalResult)
-            resultStream.current = null
+            setResult(update)
+            if (update.result !== 'JUDGING') resultStream.current = null
           },
           (error) => {
             if (!active.current) return
@@ -68,9 +71,15 @@ function SubmissionPanel({ problemId }) {
     }
   }
 
+  function editSource() {
+    resultStream.current?.close()
+    resultStream.current = null
+    setResult(null)
+  }
+
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} hidden={Boolean(result)}>
         <h2>코드 제출</h2>
 
         <div>
@@ -94,19 +103,22 @@ function SubmissionPanel({ problemId }) {
             id="source"
             rows="10"
             placeholder="코드를 입력하세요"
+            required
             value={source}
             onChange={(event) => setSource(event.target.value)}
           />
         </div>
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading || !source.trim()}>
           {loading ? '제출 중...' : '제출'}
         </button>
       </form>
 
       {result && (
         <section>
-          <h2>제출 결과</h2>
+          <h2>채점 결과</h2>
+          {transport.isPreview && <p>화면 확인용 모의 채점입니다.</p>}
+          <p>언어 {language}</p>
 
           <div>
             {result.submissionId && (
@@ -114,13 +126,16 @@ function SubmissionPanel({ problemId }) {
             )}
             {result.result && (
               <p>
-                결과 (result): <span>{result.result}</span>
+                결과 (result): <span role="status">{transport.labels?.[result.result] ?? result.result}</span>
               </p>
             )}
             {result.error && (
               <p style={{ color: 'red' }}>{result.error}</p>
             )}
           </div>
+          <button type="button" onClick={editSource}>코드 수정</button>
+          {' '}
+          {onBackToList && <button type="button" onClick={onBackToList}>문제 목록</button>}
         </section>
       )}
     </>
