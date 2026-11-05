@@ -1,43 +1,37 @@
 import { useState } from 'react'
+import GroupSelection from './components/GroupSelection'
 import SubmissionPanel from './components/SubmissionPanel'
 import UserLookupForm from './components/UserLookupForm'
 import { previewSubmission } from './api/previewSubmission'
 import './App.css'
 
-const groups = [
-  {
+const previewProblemsByGroupId = {
+  1: [{
     id: 1,
-    name: 'admin',
-    problems: [{
-      id: 1,
-      title: 'A+B',
-      description: '두 정수를 입력받아 합을 출력하세요.',
-      input: '한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.',
-      output: 'A와 B의 합을 출력합니다.',
-      sampleInput: '2 3',
-      sampleOutput: '5',
-    }],
-  },
-  {
+    title: 'A+B',
+    description: '두 정수를 입력받아 합을 출력하세요.',
+    input: '한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.',
+    output: 'A와 B의 합을 출력합니다.',
+    sampleInput: '2 3',
+    sampleOutput: '5',
+  }],
+  2: [{
     id: 2,
-    name: '연습 그룹',
-    problems: [{
-      id: 2,
-      title: '큰 수 찾기',
-      description: '두 정수 중 큰 수를 출력하세요.',
-      input: '한 줄에 두 정수가 공백으로 구분되어 주어집니다.',
-      output: '두 정수 중 큰 값을 출력합니다.',
-      sampleInput: '4 9',
-      sampleOutput: '9',
-    }],
-  },
-]
+    title: '큰 수 찾기',
+    description: '두 정수 중 큰 수를 출력하세요.',
+    input: '한 줄에 두 정수가 공백으로 구분되어 주어집니다.',
+    output: '두 정수 중 큰 값을 출력합니다.',
+    sampleInput: '4 9',
+    sampleOutput: '9',
+  }],
+}
 
 function App() {
   const [screen, setScreen] = useState('entry')
   const [user, setUser] = useState(null)
   const [group, setGroup] = useState(null)
   const [problem, setProblem] = useState(null)
+  const groupProblems = previewProblemsByGroupId[group?.groupId] ?? []
 
   function enter(matchedUser) {
     setUser(matchedUser)
@@ -65,25 +59,21 @@ function App() {
       )}
 
       {screen === 'groups' && (
-        <section>
-          <h2>그룹 선택</h2>
-          <ul>
-            {groups.map((item) => (
-              <li key={item.id}>
-                <button type="button" onClick={() => selectGroup(item)}>{item.name}</button>
-              </li>
-            ))}
-          </ul>
-          <button type="button" onClick={() => setScreen('entry')}>이름 입력으로 돌아가기</button>
-        </section>
+        <GroupSelection
+          key={user.userId}
+          userId={user.userId}
+          onSelect={selectGroup}
+          onBack={() => setScreen('entry')}
+        />
       )}
 
       {screen === 'list' && (
         <section>
           <h2>문제 목록</h2>
-          <p>그룹 {group.name}</p>
+          <p>그룹 {group.groupName}</p>
+          {groupProblems.length === 0 && <p>미리보기 문제가 없습니다.</p>}
           <ul>
-            {group.problems.map((item) => (
+            {groupProblems.map((item) => (
               <li key={item.id}>
                 <button type="button" onClick={() => openProblem(item)}>{item.id}. {item.title}</button>
               </li>
