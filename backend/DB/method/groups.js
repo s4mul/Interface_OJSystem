@@ -2,7 +2,7 @@ const pool = require('../connection');
 
 async function createGroup(groupname) {
     const [result] = await pool.execute(
-        'INSERT INTO `groups` (groupname) VALUES (?)',
+        'INSERT INTO user_groups (groupname) VALUES (?)',
         [groupname]
     );
     return result.insertId;
@@ -10,15 +10,28 @@ async function createGroup(groupname) {
 
 async function getGroupById(groupid) {
     const [rows] = await pool.execute(
-        'SELECT * FROM `groups` WHERE groupid = ?',
+        'SELECT * FROM user_groups WHERE groupid = ?',
         [groupid]
     );
     return rows[0] ?? null;
 }
 
+
+async function getGroupsByUserId(userid) {
+    const [rows] = await pool.execute(
+        `SELECT g.groupid AS groupId, g.groupname AS groupName
+         FROM user_groups AS g
+         JOIN group_members AS gm ON g.groupid = gm.groupid
+         WHERE gm.userid = ?
+         ORDER BY g.groupid`,
+        [userid]
+    );
+    return rows;
+}
+
 async function updateGroup(groupid, groupname) {
     const [result] = await pool.execute(
-        'UPDATE `groups` SET groupname = ? WHERE groupid = ?',
+        'UPDATE user_groups SET groupname = ? WHERE groupid = ?',
         [groupname, groupid]
     );
     return result.affectedRows;
@@ -26,10 +39,10 @@ async function updateGroup(groupid, groupname) {
 
 async function deleteGroup(groupid) {
     const [result] = await pool.execute(
-        'DELETE FROM `groups` WHERE groupid = ?',
+        'DELETE FROM user_groups WHERE groupid = ?',
         [groupid]
     );
     return result.affectedRows;
 }
 
-module.exports = { createGroup, getGroupById, updateGroup, deleteGroup };
+module.exports = { createGroup, getGroupById, getGroupsByUserId, updateGroup, deleteGroup };
