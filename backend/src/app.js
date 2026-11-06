@@ -3,6 +3,7 @@ const cors = require('cors');
 const submissionRoutes = require('./routes/submissions');
 const lookupUserRoutes = require('./routes/lookupUser');
 const lookupGroupRoutes = require('./routes/lookupGroup');
+const lookupProblemList = require('./routes/lookupProblemList');
 
 const app = express();
 
@@ -14,5 +15,6 @@ app.use(express.json()); // JSON Request Body 파싱
 app.use('/api', submissionRoutes);
 app.use('/api', lookupUserRoutes);
 app.use('/api', lookupGroupRoutes);
+app.use('/api', lookupProblemList);
 
 module.exports = app;

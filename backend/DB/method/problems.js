@@ -16,6 +16,30 @@ async function getProblemById(problemid) {
     );
     return rows[0] ?? null;
 }
+async function getAvailProblemsInGroup(groupId, userId) {
+    const [rows] = await pool.execute(
+        `SELECT
+            p.problemid AS problemId,
+            p.title,
+            p.status,
+            EXISTS (
+                SELECT 1
+                FROM submissions AS s
+                WHERE s.userid = gm.userid
+                  AND s.problemid = p.problemid
+                  AND s.status = 'AC'
+            ) AS isSolved
+         FROM problems AS p
+         JOIN group_members AS gm ON gm.groupid = p.groupid
+         WHERE gm.userid = ?
+           AND p.groupid = ?
+           AND p.status = 'READY'
+           AND p.ispublic = TRUE
+         ORDER BY p.problemid`,
+        [userId, groupId]
+    );
+    return rows;
+}
 
 async function updateProblem(problemid, groupid, adduser, ispublic, title) {
     const [result] = await pool.execute(
@@ -37,5 +61,6 @@ module.exports = {
     createProblem,
     getProblemById,
     updateProblem,
-    deleteProblem
+    deleteProblem,
+    getAvailProblemsInGroup
 };
