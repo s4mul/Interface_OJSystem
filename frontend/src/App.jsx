@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import GroupSelection from './components/GroupSelection'
 import ProblemList from './components/ProblemList'
+import ProblemSetList from './components/ProblemSetList'
 import ProblemDetail from './components/ProblemDetail'
 import SubmissionPanel from './components/SubmissionPanel'
 import UserLookupForm from './components/UserLookupForm'
@@ -53,13 +54,16 @@ function App() {
       )}
 
       {screen === 'list' && (
-        <ProblemList
-          key={`${user.userId}-${group.groupId}`}
-          group={group}
-          userId={user.userId}
-          onSelect={openProblem}
-          onBack={() => setScreen('groups')}
-        />
+        <div key={`${user.userId}-${group.groupId}`}>
+          <p>그룹 {group.groupName}</p>
+          <ProblemSetList groupId={group.groupId} userId={user.userId} />
+          <ProblemList
+            group={group}
+            userId={user.userId}
+            onSelect={openProblem}
+            onBack={() => setScreen('groups')}
+          />
+        </div>
       )}
 
       {screen === 'detail' && (

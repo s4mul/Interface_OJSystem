@@ -30,7 +30,6 @@ function ProblemList({ group, userId, onSelect, onBack }) {
   return (
     <section>
       <h2>문제 목록</h2>
-      <p>그룹 {group.groupName}</p>
       {!result && <p role="status">문제 목록을 불러오는 중...</p>}
       {error && (
         <>
