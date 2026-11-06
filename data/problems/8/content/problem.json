@@ -1,0 +1,15 @@
+{
+  "description": "정수 N을 입력받아 N의 제곱을 출력하세요.",
+  "input": "한 줄에 정수 N이 주어집니다.\n-100 ≤ N ≤ 100",
+  "output": "N의 제곱을 출력합니다.",
+  "examples": [
+    {
+      "input": "-3\n",
+      "output": "9\n"
+    },
+    {
+      "input": "5\n",
+      "output": "25\n"
+    }
+  ]
+}

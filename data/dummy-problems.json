@@ -1,0 +1,634 @@
+[
+  {
+    "groupName": "A",
+    "title": "A+B",
+    "content": {
+      "description": "두 정수 A와 B를 입력받아 A+B를 출력하세요.",
+      "input": "한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.\n-100 ≤ A, B ≤ 100",
+      "output": "A와 B의 합을 출력합니다.",
+      "examples": [
+        {
+          "input": "2 3\n",
+          "output": "5\n"
+        },
+        {
+          "input": "-7 3\n",
+          "output": "-4\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "2 3\n",
+        "output": "5\n"
+      },
+      {
+        "input": "-100 -100\n",
+        "output": "-200\n"
+      },
+      {
+        "input": "100 100\n",
+        "output": "200\n"
+      },
+      {
+        "input": "-100 100\n",
+        "output": "0\n"
+      },
+      {
+        "input": "0 0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "0 7\n",
+        "output": "7\n"
+      },
+      {
+        "input": "7 0\n",
+        "output": "7\n"
+      },
+      {
+        "input": "-7 3\n",
+        "output": "-4\n"
+      },
+      {
+        "input": "3 -7\n",
+        "output": "-4\n"
+      },
+      {
+        "input": "5 5\n",
+        "output": "10\n"
+      },
+      {
+        "input": "99 -98\n",
+        "output": "1\n"
+      },
+      {
+        "input": "-1 -2\n",
+        "output": "-3\n"
+      },
+      {
+        "input": "9 4\n",
+        "output": "13\n"
+      },
+      {
+        "input": "4 9\n",
+        "output": "13\n"
+      }
+    ]
+  },
+  {
+    "groupName": "A",
+    "title": "A-B",
+    "content": {
+      "description": "두 정수 A와 B를 입력받아 A-B를 출력하세요.",
+      "input": "한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.\n-100 ≤ A, B ≤ 100",
+      "output": "A에서 B를 뺀 값을 출력합니다.",
+      "examples": [
+        {
+          "input": "2 3\n",
+          "output": "-1\n"
+        },
+        {
+          "input": "5 5\n",
+          "output": "0\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "2 3\n",
+        "output": "-1\n"
+      },
+      {
+        "input": "-100 -100\n",
+        "output": "0\n"
+      },
+      {
+        "input": "100 100\n",
+        "output": "0\n"
+      },
+      {
+        "input": "-100 100\n",
+        "output": "-200\n"
+      },
+      {
+        "input": "0 0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "0 7\n",
+        "output": "-7\n"
+      },
+      {
+        "input": "7 0\n",
+        "output": "7\n"
+      },
+      {
+        "input": "-7 3\n",
+        "output": "-10\n"
+      },
+      {
+        "input": "3 -7\n",
+        "output": "10\n"
+      },
+      {
+        "input": "5 5\n",
+        "output": "0\n"
+      },
+      {
+        "input": "99 -98\n",
+        "output": "197\n"
+      },
+      {
+        "input": "-1 -2\n",
+        "output": "1\n"
+      },
+      {
+        "input": "9 4\n",
+        "output": "5\n"
+      },
+      {
+        "input": "4 9\n",
+        "output": "-5\n"
+      }
+    ]
+  },
+  {
+    "groupName": "A",
+    "title": "큰 수 찾기",
+    "content": {
+      "description": "두 정수 A와 B 중 큰 값을 출력하세요. 두 값이 같으면 그 값을 출력하세요.",
+      "input": "한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.\n-100 ≤ A, B ≤ 100",
+      "output": "두 정수 중 큰 값을 출력합니다.",
+      "examples": [
+        {
+          "input": "2 3\n",
+          "output": "3\n"
+        },
+        {
+          "input": "9 4\n",
+          "output": "9\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "2 3\n",
+        "output": "3\n"
+      },
+      {
+        "input": "-100 -100\n",
+        "output": "-100\n"
+      },
+      {
+        "input": "100 100\n",
+        "output": "100\n"
+      },
+      {
+        "input": "-100 100\n",
+        "output": "100\n"
+      },
+      {
+        "input": "0 0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "0 7\n",
+        "output": "7\n"
+      },
+      {
+        "input": "7 0\n",
+        "output": "7\n"
+      },
+      {
+        "input": "-7 3\n",
+        "output": "3\n"
+      },
+      {
+        "input": "3 -7\n",
+        "output": "3\n"
+      },
+      {
+        "input": "5 5\n",
+        "output": "5\n"
+      },
+      {
+        "input": "99 -98\n",
+        "output": "99\n"
+      },
+      {
+        "input": "-1 -2\n",
+        "output": "-1\n"
+      },
+      {
+        "input": "9 4\n",
+        "output": "9\n"
+      },
+      {
+        "input": "4 9\n",
+        "output": "9\n"
+      }
+    ]
+  },
+  {
+    "groupName": "A",
+    "title": "작은 수 찾기",
+    "content": {
+      "description": "두 정수 A와 B 중 작은 값을 출력하세요. 두 값이 같으면 그 값을 출력하세요.",
+      "input": "한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.\n-100 ≤ A, B ≤ 100",
+      "output": "두 정수 중 작은 값을 출력합니다.",
+      "examples": [
+        {
+          "input": "2 3\n",
+          "output": "2\n"
+        },
+        {
+          "input": "9 4\n",
+          "output": "4\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "2 3\n",
+        "output": "2\n"
+      },
+      {
+        "input": "-100 -100\n",
+        "output": "-100\n"
+      },
+      {
+        "input": "100 100\n",
+        "output": "100\n"
+      },
+      {
+        "input": "-100 100\n",
+        "output": "-100\n"
+      },
+      {
+        "input": "0 0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "0 7\n",
+        "output": "0\n"
+      },
+      {
+        "input": "7 0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "-7 3\n",
+        "output": "-7\n"
+      },
+      {
+        "input": "3 -7\n",
+        "output": "-7\n"
+      },
+      {
+        "input": "5 5\n",
+        "output": "5\n"
+      },
+      {
+        "input": "99 -98\n",
+        "output": "-98\n"
+      },
+      {
+        "input": "-1 -2\n",
+        "output": "-2\n"
+      },
+      {
+        "input": "9 4\n",
+        "output": "4\n"
+      },
+      {
+        "input": "4 9\n",
+        "output": "4\n"
+      }
+    ]
+  },
+  {
+    "groupName": "B",
+    "title": "A * B",
+    "content": {
+      "description": "두 정수 A와 B를 입력받아 곱을 출력하세요.",
+      "input": "한 줄에 두 정수 A와 B가 공백으로 구분되어 주어집니다.\n-100 ≤ A, B ≤ 100",
+      "output": "A와 B의 곱을 출력합니다.",
+      "examples": [
+        {
+          "input": "2 3\n",
+          "output": "6\n"
+        },
+        {
+          "input": "-7 3\n",
+          "output": "-21\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "2 3\n",
+        "output": "6\n"
+      },
+      {
+        "input": "-100 -100\n",
+        "output": "10000\n"
+      },
+      {
+        "input": "100 100\n",
+        "output": "10000\n"
+      },
+      {
+        "input": "-100 100\n",
+        "output": "-10000\n"
+      },
+      {
+        "input": "0 0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "0 7\n",
+        "output": "0\n"
+      },
+      {
+        "input": "7 0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "-7 3\n",
+        "output": "-21\n"
+      },
+      {
+        "input": "3 -7\n",
+        "output": "-21\n"
+      },
+      {
+        "input": "5 5\n",
+        "output": "25\n"
+      },
+      {
+        "input": "99 -98\n",
+        "output": "-9702\n"
+      },
+      {
+        "input": "-1 -2\n",
+        "output": "2\n"
+      },
+      {
+        "input": "9 4\n",
+        "output": "36\n"
+      },
+      {
+        "input": "4 9\n",
+        "output": "36\n"
+      }
+    ]
+  },
+  {
+    "groupName": "B",
+    "title": "몫 구하기",
+    "content": {
+      "description": "두 양의 정수 A와 B를 입력받아 A를 B로 나눈 정수 몫을 출력하세요.",
+      "input": "한 줄에 두 양의 정수 A와 B가 공백으로 구분되어 주어집니다.\n1 ≤ A, B ≤ 100",
+      "output": "A를 B로 나눈 몫을 출력합니다. 소수 부분은 버립니다.",
+      "examples": [
+        {
+          "input": "7 3\n",
+          "output": "2\n"
+        },
+        {
+          "input": "2 5\n",
+          "output": "0\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "7 3\n",
+        "output": "2\n"
+      },
+      {
+        "input": "2 5\n",
+        "output": "0\n"
+      },
+      {
+        "input": "10 5\n",
+        "output": "2\n"
+      },
+      {
+        "input": "1 1\n",
+        "output": "1\n"
+      },
+      {
+        "input": "100 1\n",
+        "output": "100\n"
+      },
+      {
+        "input": "100 100\n",
+        "output": "1\n"
+      },
+      {
+        "input": "1 100\n",
+        "output": "0\n"
+      },
+      {
+        "input": "99 10\n",
+        "output": "9\n"
+      },
+      {
+        "input": "100 3\n",
+        "output": "33\n"
+      },
+      {
+        "input": "13 7\n",
+        "output": "1\n"
+      },
+      {
+        "input": "42 6\n",
+        "output": "7\n"
+      },
+      {
+        "input": "98 99\n",
+        "output": "0\n"
+      }
+    ]
+  },
+  {
+    "groupName": "B",
+    "title": "나머지 구하기",
+    "content": {
+      "description": "두 양의 정수 A와 B를 입력받아 A를 B로 나눈 나머지를 출력하세요.",
+      "input": "한 줄에 두 양의 정수 A와 B가 공백으로 구분되어 주어집니다.\n1 ≤ A, B ≤ 100",
+      "output": "A를 B로 나눈 나머지를 출력합니다.",
+      "examples": [
+        {
+          "input": "7 3\n",
+          "output": "1\n"
+        },
+        {
+          "input": "10 5\n",
+          "output": "0\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "7 3\n",
+        "output": "1\n"
+      },
+      {
+        "input": "2 5\n",
+        "output": "2\n"
+      },
+      {
+        "input": "10 5\n",
+        "output": "0\n"
+      },
+      {
+        "input": "1 1\n",
+        "output": "0\n"
+      },
+      {
+        "input": "100 1\n",
+        "output": "0\n"
+      },
+      {
+        "input": "100 100\n",
+        "output": "0\n"
+      },
+      {
+        "input": "1 100\n",
+        "output": "1\n"
+      },
+      {
+        "input": "99 10\n",
+        "output": "9\n"
+      },
+      {
+        "input": "100 3\n",
+        "output": "1\n"
+      },
+      {
+        "input": "13 7\n",
+        "output": "6\n"
+      },
+      {
+        "input": "42 6\n",
+        "output": "0\n"
+      },
+      {
+        "input": "98 99\n",
+        "output": "98\n"
+      }
+    ]
+  },
+  {
+    "groupName": "B",
+    "title": "제곱 구하기",
+    "content": {
+      "description": "정수 N을 입력받아 N의 제곱을 출력하세요.",
+      "input": "한 줄에 정수 N이 주어집니다.\n-100 ≤ N ≤ 100",
+      "output": "N의 제곱을 출력합니다.",
+      "examples": [
+        {
+          "input": "-3\n",
+          "output": "9\n"
+        },
+        {
+          "input": "5\n",
+          "output": "25\n"
+        }
+      ]
+    },
+    "limits": {
+      "timeLimitMs": 2000,
+      "memoryLimitMb": 256,
+      "outputLimitKb": 1024
+    },
+    "testCases": [
+      {
+        "input": "-3\n",
+        "output": "9\n"
+      },
+      {
+        "input": "5\n",
+        "output": "25\n"
+      },
+      {
+        "input": "-100\n",
+        "output": "10000\n"
+      },
+      {
+        "input": "100\n",
+        "output": "10000\n"
+      },
+      {
+        "input": "0\n",
+        "output": "0\n"
+      },
+      {
+        "input": "1\n",
+        "output": "1\n"
+      },
+      {
+        "input": "-1\n",
+        "output": "1\n"
+      },
+      {
+        "input": "2\n",
+        "output": "4\n"
+      },
+      {
+        "input": "-2\n",
+        "output": "4\n"
+      },
+      {
+        "input": "99\n",
+        "output": "9801\n"
+      },
+      {
+        "input": "-99\n",
+        "output": "9801\n"
+      },
+      {
+        "input": "10\n",
+        "output": "100\n"
+      }
+    ]
+  }
+]
