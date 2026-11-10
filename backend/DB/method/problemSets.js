@@ -1,9 +1,9 @@
 const pool = require('../connection');
 
-async function createProblemSet(groupid, setname, start_at = null, end_at = null) {
+async function createProblemSet(groupid, setname, start_at = null, end_at = null, description = null) {
     const [result] = await pool.execute(
-        'INSERT INTO problemset (groupid, setname, start_at, end_at) VALUES (?, ?, ?, ?)',
-        [groupid, setname, start_at, end_at]
+        'INSERT INTO problemset (groupid, setname, start_at, end_at, description) VALUES (?, ?, ?, ?, ?)',
+        [groupid, setname, start_at, end_at, description]
     );
     return result.insertId;
 }
@@ -25,10 +25,18 @@ async function getProblemsetByGroupId(groupId){
     return rows
 }
 
-async function updateProblemSet(setid, groupid, setname, start_at, end_at) {
+async function updateProblemSet(setid, groupid, setname, start_at, end_at, description) {
+    const fields = ['groupid = ?', 'setname = ?', 'start_at = ?', 'end_at = ?'];
+    const values = [groupid, setname, start_at, end_at];
+
+    if (description !== undefined) {
+        fields.push('description = ?');
+        values.push(description);
+    }
+
     const [result] = await pool.execute(
-        'UPDATE problemset SET groupid = ?, setname = ?, start_at = ?, end_at = ? WHERE setid = ?',
-        [groupid, setname, start_at, end_at, setid]
+        `UPDATE problemset SET ${fields.join(', ')} WHERE setid = ?`,
+        [...values, setid]
     );
     return result.affectedRows;
 }

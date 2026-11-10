@@ -5,6 +5,7 @@ const lookupUserRoutes = require('./routes/lookupUser');
 const lookupGroupRoutes = require('./routes/lookupGroup');
 const lookupProblemList = require('./routes/lookupProblemList');
 const lookupProblemSet = require('./routes/lookupProblemSet')
+const lookupProblemListInSet = require('./routes/lookupProblemListInSet');
 
 const app = express();
 
@@ -18,5 +19,6 @@ app.use('/api', lookupUserRoutes);
 app.use('/api', lookupGroupRoutes);
 app.use('/api', lookupProblemList);
 app.use('/api', lookupProblemSet);
+app.use('/api', lookupProblemListInSet);
 
 module.exports = app;
