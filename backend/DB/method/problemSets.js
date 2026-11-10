@@ -16,6 +16,15 @@ async function getProblemSetById(setid) {
     return rows[0] ?? null;
 }
 
+async function getProblemsetByGroupId(groupId){
+    const [rows] = await pool.execute(
+        'SELECT setid as setId, setname as setName FROM problemset WHERE groupid = ?',
+        [groupId]
+    )
+
+    return rows
+}
+
 async function updateProblemSet(setid, groupid, setname, start_at, end_at) {
     const [result] = await pool.execute(
         'UPDATE problemset SET groupid = ?, setname = ?, start_at = ?, end_at = ? WHERE setid = ?',
@@ -32,4 +41,4 @@ async function deleteProblemSet(setid) {
     return result.affectedRows;
 }
 
-module.exports = { createProblemSet, getProblemSetById, updateProblemSet, deleteProblemSet };
+module.exports = { createProblemSet, getProblemSetById, updateProblemSet, deleteProblemSet, getProblemsetByGroupId };

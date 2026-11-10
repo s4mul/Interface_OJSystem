@@ -1,6 +1,7 @@
 
 const pool = require('../connection');
 
+
 async function createProblemGroup(setid, problemid) {
     const [result] = await pool.execute(
         'INSERT INTO problemset_problems (setid, problemid) VALUES (?, ?)',
