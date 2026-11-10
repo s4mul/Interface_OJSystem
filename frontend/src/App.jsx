@@ -12,6 +12,7 @@ function App() {
   const [screen, setScreen] = useState('entry')
   const [user, setUser] = useState(null)
   const [group, setGroup] = useState(null)
+  const [problemSet, setProblemSet] = useState(null)
   const [problem, setProblem] = useState(null)
 
   function enter(matchedUser) {
@@ -21,6 +22,7 @@ function App() {
 
   function selectGroup(item) {
     setGroup(item)
+    setProblemSet(null)
     setProblem(null)
     setScreen('list')
   }
@@ -56,12 +58,16 @@ function App() {
       {screen === 'list' && (
         <div key={`${user.userId}-${group.groupId}`}>
           <p>그룹 {group.groupName}</p>
-          <ProblemSetList groupId={group.groupId} userId={user.userId} />
+          {!problemSet && (
+            <ProblemSetList groupId={group.groupId} userId={user.userId} onSelect={setProblemSet} />
+          )}
           <ProblemList
+            key={problemSet?.setId ?? 'group'}
             group={group}
             userId={user.userId}
+            selectedSet={problemSet}
             onSelect={openProblem}
-            onBack={() => setScreen('groups')}
+            onBack={problemSet ? () => setProblemSet(null) : () => setScreen('groups')}
           />
         </div>
       )}

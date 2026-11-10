@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getProblemSets } from '../api/getProblemSets'
 
-function ProblemSetList({ groupId, userId }) {
+function ProblemSetList({ groupId, userId, onSelect }) {
   const [result, setResult] = useState(null)
   const [attempt, setAttempt] = useState(0)
 
@@ -41,7 +41,11 @@ function ProblemSetList({ groupId, userId }) {
       {problemSets?.length > 0 && (
         <ul>
           {problemSets.map((problemSet) => (
-            <li key={problemSet.setId}>{problemSet.setId}. {problemSet.setName}</li>
+            <li key={problemSet.setId}>
+              <button type="button" onClick={() => onSelect(problemSet)}>
+                {problemSet.setId}. {problemSet.setName}
+              </button>
+            </li>
           ))}
         </ul>
       )}
