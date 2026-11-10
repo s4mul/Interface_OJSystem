@@ -149,31 +149,39 @@ async function run() {
 
         // 5. Problem Sets
         await check('problemset: CREATE / READ / UPDATE', async () => {
+            const setName = `test_set_${suffix}`;
+            const updatedName = `updated_set_${suffix}`;
+            const description = '문제집 설명\n두 번째 줄';
+            const start = '2030-01-01 09:00:00';
+            const end = '2030-01-01 11:00:00';
             ids.set = await sets.createProblemSet(
-                ids.group, `test_set_${suffix}`
+                ids.group, setName, null, null, description
             );
 
             assert.ok(ids.set > 0);
-            assert.equal(
-                (await sets.getProblemSetById(ids.set)).setname,
-                `test_set_${suffix}`
-            );
+            const created = await sets.getProblemSetById(ids.set);
+            assert.equal(created.setname, setName);
+            assert.equal(created.description, description);
 
             assert.equal(
-                await sets.updateProblemSet(
-                    ids.set,
-                    ids.group,
-                    `updated_set_${suffix}`,
-                    '2030-01-01 09:00:00',
-                    '2030-01-01 11:00:00'
-                ),
+                await sets.updateProblemSet(ids.set, ids.group, updatedName, start, end),
                 1
             );
+            const updated = await sets.getProblemSetById(ids.set);
+            assert.equal(updated.setname, updatedName);
+            assert.equal(updated.description, description);
 
             assert.equal(
-                (await sets.getProblemSetById(ids.set)).setname,
-                `updated_set_${suffix}`
+                await sets.updateProblemSet(ids.set, ids.group, updatedName, start, end, '수정한 설명'),
+                1
             );
+            assert.equal((await sets.getProblemSetById(ids.set)).description, '수정한 설명');
+
+            assert.equal(
+                await sets.updateProblemSet(ids.set, ids.group, updatedName, start, end, null),
+                1
+            );
+            assert.equal((await sets.getProblemSetById(ids.set)).description, null);
         });
 
         // 6. Problem Set - Problem 관계

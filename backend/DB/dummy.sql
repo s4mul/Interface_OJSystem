@@ -30,9 +30,7 @@ VALUES
     (@group_b_id, @c3_id, FALSE)
 ON DUPLICATE KEY UPDATE isadmin = group_members.isadmin;
 
--- 문제 본문과 채점 데이터 원본은 data/dummy-problems.json에 있다.
--- 이 SQL 실행 후 저장소 루트에서 node backend/DB/sync-dummy-problems.js를 실행한다.
--- DB의 실제 problemid를 조회하여 data/problems/{problemid}에 파일을 배치한다.
+-- 문제 본문과 채점 데이터는 별도 파일로 관리한다.
 -- 두 정수를 받는 문제는 작은 정수 범위를 사용하며, 나눗셈의 입력은 양의 정수로 한다.
 -- 모든 더미 문제는 공개 상태(TRUE), READY로 등록한다.
 
@@ -171,3 +169,5 @@ WHERE ps.groupid = @group_b_id
 ON DUPLICATE KEY UPDATE problemid = problemset_problems.problemid;
 
 COMMIT;
+
+select * from problems;

@@ -95,6 +95,7 @@ CREATE TABLE problemset (
     setid INT UNSIGNED NOT NULL AUTO_INCREMENT,
     groupid INT UNSIGNED NOT NULL,
     setname VARCHAR(200) NOT NULL,
+    description TEXT NULL,
     start_at DATETIME NULL,
     end_at DATETIME NULL,
 
