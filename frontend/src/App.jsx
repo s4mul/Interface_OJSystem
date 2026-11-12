@@ -5,7 +5,6 @@ import ProblemSetList from './components/ProblemSetList'
 import ProblemDetail from './components/ProblemDetail'
 import SubmissionPanel from './components/SubmissionPanel'
 import UserLookupForm from './components/UserLookupForm'
-import { previewSubmission } from './api/previewSubmission'
 import './App.css'
 
 function App() {
@@ -87,7 +86,6 @@ function App() {
           <p>{problem.problemId}. {problem.title}</p>
           <SubmissionPanel
             problemId={problem.problemId}
-            transport={previewSubmission}
             onBackToList={() => setScreen('list')}
           />
           <p><button type="button" onClick={() => setScreen('detail')}>문제 상세</button></p>
