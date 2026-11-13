@@ -86,6 +86,7 @@ function App() {
           <p>{problem.problemId}. {problem.title}</p>
           <SubmissionPanel
             problemId={problem.problemId}
+            userId={user.userId}
             onBackToList={() => setScreen('list')}
           />
           <p><button type="button" onClick={() => setScreen('detail')}>문제 상세</button></p>

@@ -5,7 +5,7 @@ const LANGUAGES = ['C', 'C++', 'Java', 'Python']
 
 const liveSubmission = { submitCode, subscribeToSubmission }
 
-function SubmissionPanel({ problemId, transport = liveSubmission, onBackToList }) {
+function SubmissionPanel({ problemId, userId, transport = liveSubmission, onBackToList }) {
   const [language, setLanguage] = useState('C++')
   const [source, setSource] = useState('')
   const [result, setResult] = useState(null)
@@ -33,6 +33,7 @@ function SubmissionPanel({ problemId, transport = liveSubmission, onBackToList }
     try {
       const responseData = await transport.submitCode({
         problemId,
+        userId,
         language,
         source,
       })

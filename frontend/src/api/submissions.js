@@ -4,7 +4,7 @@
  * Submit source code.
  * @returns {Promise<{ submissionId: number, result: string }>}
  */
-export async function submitCode({ problemId, language, source }) {
+export async function submitCode({ problemId, userId, language, source }) {
   try {
     const response = await fetch('/api/submissions', {
       method: 'POST',
@@ -13,6 +13,7 @@ export async function submitCode({ problemId, language, source }) {
       },
       body: JSON.stringify({
         problemId: Number(problemId),
+        userId,
         language,
         source,
       }),

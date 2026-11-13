@@ -101,7 +101,7 @@ router.post('/submissions', async (req, res) => {
     });
   }
 
-  const userId = 1; // 로그인 구현 전 임시 사용자
+  const userId = res.userId; // 로그인 구현 전 임시 사용자
   let submissionId;
 
   try {
