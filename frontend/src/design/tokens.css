@@ -1,0 +1,16 @@
+:root {
+  --navy: #081e50;
+  --navy-hover: #143675;
+  --navy-soft: #edf2fb;
+  --bg: #f7f9fc;
+  --surface: #fff;
+  --text: #17233a;
+  --muted: #69778e;
+  --border: #dce4ef;
+  --border-hover: #8198c2;
+  --shadow: 0 8px 28px rgb(17 39 79 / 3.5%);
+  --radius-panel: 15px;
+  --radius-control: 9px;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}

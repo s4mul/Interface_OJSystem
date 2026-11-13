@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { getProblemSet } from '../api/getProblemSet'
 import { getProblems } from '../api/getProblems'
+import { AsyncState, Button, StatusBadge } from '../design/ui'
 
-function ProblemList({ group, userId, selectedSet, onSelect, onBack }) {
+function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets, onShowAll }) {
   const [result, setResult] = useState(null)
   const [attempt, setAttempt] = useState(0)
   const { groupId } = group
@@ -27,6 +28,10 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack }) {
   }, [groupId, userId, setId, attempt])
 
   const { problemSet, problems, error } = result ?? {}
+  const title = selectedSet ? problemSet?.setName ?? selectedSet.setName : '문제 목록'
+  const description = selectedSet
+    ? problemSet ? problemSet.description?.trim() ? problemSet.description : '등록된 설명이 없습니다.' : '문제집에 포함된 문제를 확인하고 풀어보세요.'
+    : `${group.groupName} 그룹의 문제를 확인하고 풀어보세요.`
 
   function retry() {
     setResult(null)
@@ -34,44 +39,61 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack }) {
   }
 
   return (
-    <>
-      {selectedSet && (
-        <>
-          <h2>{problemSet?.setName ?? selectedSet.setName}</h2>
-          {problemSet && (
-            <p style={{ whiteSpace: 'pre-wrap' }}>
-              {problemSet.description?.trim() ? problemSet.description : '등록된 설명이 없습니다.'}
-            </p>
-          )}
-        </>
-      )}
-      <section>
-        <h2>{selectedSet ? '문제집 문제 목록' : '문제 목록'}</h2>
-        {!result && <p role="status">문제 목록을 불러오는 중...</p>}
-        {error && (
-          <>
-            <p role="alert">{error}</p>
-            <button type="button" onClick={retry}>다시 시도</button>
-          </>
+    <section aria-labelledby="problem-list-title">
+      <div className="intro">
+        <div>
+          <span className="eyebrow">{selectedSet ? '문제집 문제 목록' : '그룹 전체 문제'}</span>
+          <h1 id="problem-list-title">{title}</h1>
+          <p className="subtitle preserve-lines">{description}</p>
+        </div>
+        {onShowSets && <Button variant="secondary" onClick={onShowSets}>문제집 목록</Button>}
+      </div>
+
+      <div className="panel">
+        {selectedSet && (
+          <div className="selected-note">
+            <span>{title}<span className="hint">선택한 문제집의 문제입니다.</span></span>
+            {onShowAll && <Button variant="secondary" onClick={onShowAll}>전체 문제 보기</Button>}
+          </div>
         )}
-        {problems?.length === 0 && <p>조회할 수 있는 문제가 없습니다.</p>}
+        <div className="panel-head">
+          <h2 className="panel-head-title">{selectedSet ? '문제집 문제 목록' : '전체 문제'}</h2>
+          <span className="panel-head-info">{problems ? `${problems.length}개 문제` : '문제 목록'}</span>
+        </div>
+        <AsyncState
+          loading={!result}
+          error={error}
+          onRetry={retry}
+          empty={problems?.length === 0}
+          emptyMessage="조회할 수 있는 문제가 없습니다."
+        />
         {problems?.length > 0 && (
-          <ul>
-            {problems.map((problem) => (
-              <li key={problem.problemId}>
-                <button type="button" onClick={() => onSelect(problem)}>
-                  {problem.problemId}. {problem.title}
-                </button>
-                {' '}{problem.isSolved ? '풀이 완료' : '미해결'}
-              </li>
-            ))}
-          </ul>
+          <div className="table-wrap">
+            <table aria-label={`${title} 해결 현황`}>
+              <thead><tr><th scope="col">번호</th><th scope="col">제목</th><th scope="col">해결 현황</th></tr></thead>
+              <tbody>
+                {problems.map((problem) => (
+                  <tr key={problem.problemId}>
+                    <td className="problem-id">{problem.problemId}</td>
+                    <td>
+                      <button className="problem-title" type="button" onClick={() => onSelect(problem)}>
+                        {problem.title}
+                      </button>
+                    </td>
+                    <td><StatusBadge solved={problem.isSolved} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-        <button type="button" onClick={onBack}>
-          {selectedSet ? '초기화면으로 돌아가기' : '그룹 선택으로 돌아가기'}
-        </button>
-      </section>
-    </>
+      </div>
+      <div className="actions detail-actions">
+        <Button variant="secondary" onClick={onBack}>
+          {selectedSet ? '문제집 목록으로' : '그룹 선택으로'}
+        </Button>
+      </div>
+    </section>
   )
 }
 
