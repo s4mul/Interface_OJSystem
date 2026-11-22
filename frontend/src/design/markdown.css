@@ -1,0 +1,21 @@
+.oj-markdown { color: var(--text); font-size: 1rem; line-height: 1.85; overflow-wrap: anywhere; }
+.oj-markdown > :first-child { margin-top: 0; }
+.oj-markdown > :last-child { margin-bottom: 0; }
+.oj-markdown p { margin: 0 0 1em; white-space: pre-line; }
+.oj-markdown h1, .oj-markdown h2, .oj-markdown h3, .oj-markdown h4, .oj-markdown h5, .oj-markdown h6 { margin: 1.4em 0 .65em; line-height: 1.5; color: var(--navy); letter-spacing: normal; }
+.oj-markdown h1 { font-size: 1.5rem; }.oj-markdown h2 { font-size: 1.3rem; }.oj-markdown h3 { font-size: 1.15rem; }.oj-markdown h4, .oj-markdown h5, .oj-markdown h6 { font-size: 1rem; }
+.oj-markdown ul, .oj-markdown ol { padding-left: 1.65em; margin: 0 0 1em; }
+.oj-markdown li + li { margin-top: .3em; }.oj-markdown li > p { margin-bottom: .35em; }
+.oj-markdown a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+.oj-markdown blockquote { margin: 1em 0; padding: 12px 18px; border-left: 3px solid var(--border-hover); background: var(--navy-soft); }
+.oj-markdown blockquote p:last-child { margin-bottom: 0; }
+.oj-markdown code { font: .9em/1.7 var(--font-mono); padding: .12em .35em; border-radius: 4px; background: var(--navy-soft); }
+.oj-markdown pre { max-width: 100%; overflow-x: auto; padding: 18px; border: 1px solid var(--border); border-radius: 9px; background: #f5f7fb; }
+.oj-markdown pre code { padding: 0; border: 0; border-radius: 0; background: transparent; white-space: pre; }
+.oj-markdown img { display: block; max-width: 100%; height: auto; margin: 16px auto; border-radius: 8px; }
+.oj-markdown-table { max-width: 100%; overflow-x: auto; margin: 1em 0; border: 1px solid var(--border); border-radius: 8px; }
+.oj-markdown table { width: max-content; min-width: 100%; table-layout: auto; }
+.oj-markdown th, .oj-markdown td { padding: 11px 14px; font-size: .9375rem; border: 1px solid var(--border); white-space: normal; }
+.oj-markdown :is(th, td):first-child, .oj-markdown :is(th, td):last-child { width: auto; text-align: inherit; }
+.oj-markdown-missing-image { display: block; padding: 14px; border: 1px dashed var(--border-hover); border-radius: 8px; color: var(--muted); font-size: .875rem; }
+.oj-markdown hr { border: 0; border-top: 1px solid var(--border); margin: 1.5em 0; }

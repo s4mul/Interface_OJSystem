@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getProblem } from '../api/getProblem'
 import { AsyncState, Button, CopyButton, StatusBadge } from '../design/ui'
+import MarkdownContent from '../design/MarkdownContent.jsx'
 
 function ProblemDetail({ problemId, userId, isSolved = false, onSubmit, onBack, backLabel = '문제 목록' }) {
   const [result, setResult] = useState(null)
@@ -55,15 +56,15 @@ function ProblemDetail({ problemId, userId, isSolved = false, onSubmit, onBack, 
           <div className="panel">
             <section className="detail-section">
               <h2>문제</h2>
-              <p className="problem-prose">{problem.description}</p>
+              <MarkdownContent>{problem.description}</MarkdownContent>
             </section>
             <section className="detail-section">
               <h2>입력</h2>
-              <p className="problem-prose">{problem.input}</p>
+              <MarkdownContent>{problem.input}</MarkdownContent>
             </section>
             <section className="detail-section">
               <h2>출력</h2>
-              <p className="problem-prose">{problem.output}</p>
+              <MarkdownContent>{problem.output}</MarkdownContent>
             </section>
             <section className="detail-section">
               <h2>예제 입출력</h2>
