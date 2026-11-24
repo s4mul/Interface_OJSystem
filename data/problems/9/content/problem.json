@@ -1,0 +1,12 @@
+{
+  "format": "markdown",
+  "description": "## 그대로 출력하기\n\n입력받은것을 그대로 출력하세요\n\n![엘보](/api/problems/9/assets/9a44f73f-c2db-4aef-8fe9-d5d288a7a691.png)\n",
+  "input": "a",
+  "output": "a",
+  "examples": [
+    {
+      "input": "b",
+      "output": "b"
+    }
+  ]
+}
