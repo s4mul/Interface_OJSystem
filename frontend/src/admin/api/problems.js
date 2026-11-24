@@ -1,3 +1,5 @@
+import { getProblem } from '../../api/getProblem.js'
+
 async function readResponse(response, fallback) {
   const data = await response.json().catch(() => null)
   if (!response.ok) throw new Error(typeof data?.error === 'string' ? data.error : fallback)
@@ -31,4 +33,21 @@ export async function getAdminProblems(groupId, userId, signal) {
     throw new Error('서버에서 받은 관리자 문제 목록을 읽을 수 없습니다.')
   }
   return data.problems
+}
+
+export async function getEditableProblem(groupId, problemId, userId, signal) {
+  const [problem, problems] = await Promise.all([getProblem(problemId, userId, signal), getAdminProblems(groupId, userId, signal)])
+  const listed = problems.find((item) => item.problemId === problemId)
+  if (problem.groupId !== groupId || !listed) throw new Error('현재 그룹의 문제를 선택해 주세요.')
+  return { ...problem, isPublic: listed.isPublic }
+}
+
+export async function updateAdminProblem(groupId, problemId, payload) {
+  let response
+  try {
+    response = await fetch(`/api/admin/groups/${groupId}/problems/${problemId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+  } catch { throw new Error('서버 응답을 확인하지 못했습니다. 다시 조회한 뒤 저장 여부를 확인해 주세요.') }
+  const data = await readResponse(response, response.status === 404 ? '문제 수정 기능은 아직 사용할 수 없습니다.' : '문제를 수정하지 못했습니다.')
+  if (data?.problemId !== problemId || data.groupId !== groupId || typeof data.isPublic !== 'boolean') throw new Error('수정 응답을 읽을 수 없습니다. 문제 목록에서 확인해 주세요.')
+  return data
 }

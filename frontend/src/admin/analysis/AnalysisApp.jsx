@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import GroupSelection from '../../components/GroupSelection.jsx'
-import ProblemList from '../../components/ProblemList.jsx'
-import ProblemSetList from '../../components/ProblemSetList.jsx'
+import GroupSelection from '../components/AdminGroupSelection.jsx'
+import ProblemList from '../components/AdminProblemList.jsx'
+import ProblemSetList from '../components/AdminProblemSetList.jsx'
 import ProblemDetail from '../../components/ProblemDetail.jsx'
 import SubmissionPanel from '../../components/SubmissionPanel.jsx'
 import SubmissionList from '../../components/SubmissionList.jsx'
 import UserLookupForm from '../../components/UserLookupForm.jsx'
 import { subscribeToSubmission } from '../../api/submissions.js'
+import { useManagementAccess } from '../api/useManagementAccess.js'
 import { getMySubmissions, mergeSubmissionHistory } from '../api/management.js'
 import { AsyncState, Button } from '../../design/ui.jsx'
 import { navigateAdmin, useAdminPath } from '../navigation.js'
@@ -101,6 +102,8 @@ export default function AnalysisApp({ submissionHistory, setSubmissionHistory })
   }
 
   const group = context.group ?? (['submissions', 'entry', 'groups'].includes(route.page) && lastGroup && lastGroup.userId === user?.userId ? lastGroup.group : null)
+  const { isAdmin, adminGroupIds } = useManagementAccess(user?.userId, route.page === 'groups' ? null : group?.groupId)
+  const managementBase = `/admin/groups/${group?.groupId}`
   const pageKey = `${user?.userId}:${pathname}`
   let content
 
@@ -111,11 +114,11 @@ export default function AnalysisApp({ submissionHistory, setSubmissionHistory })
   } else if (context.loading || context.error) {
     content = <section className="panel analysis-route-state"><AsyncState loading={context.loading} error={context.error} onRetry={() => setAttempt((value) => value + 1)} /><div className="actions"><AdminLink className="btn secondary" to={`${analysisBase}/groups`}>그룹 선택</AdminLink><Button variant="secondary" onClick={changeUser}>사용자 변경</Button></div></section>
   } else if (route.page === 'groups') {
-    content = <GroupSelection key={pageKey} userId={user.userId} onSelect={(item) => { setLastGroup({ userId: user.userId, group: item }); navigateAdmin(analysisGroupPath(item.groupId)) }} onBack={changeUser} />
+    content = <GroupSelection onCreate={isAdmin ? () => navigateAdmin('/admin/groups/new') : undefined} key={pageKey} userId={user.userId} onSelect={(item) => { setLastGroup({ userId: user.userId, group: item }); navigateAdmin(analysisGroupPath(item.groupId)) }} onBack={changeUser} />
   } else if (route.page === 'problemsets') {
-    content = <ProblemSetList key={pageKey} group={context.group} groupId={route.groupId} userId={user.userId} onSelect={(item) => navigateAdmin(`${analysisGroupPath(route.groupId, 'problemsets')}/${item.setId}`)} onShowProblems={() => navigateAdmin(analysisGroupPath(route.groupId))} />
+    content = <ProblemSetList onCreate={isAdmin ? () => navigateAdmin(`${managementBase}/problemsets/new`) : undefined} onEdit={isAdmin ? (item) => navigateAdmin(`${managementBase}/problemsets/${item.setId}/edit`) : undefined} key={pageKey} group={context.group} groupId={route.groupId} userId={user.userId} onSelect={(item) => navigateAdmin(`${analysisGroupPath(route.groupId, 'problemsets')}/${item.setId}`)} onShowProblems={() => navigateAdmin(analysisGroupPath(route.groupId))} />
   } else if (route.page === 'problems' || route.page === 'set-problems') {
-    content = <ProblemList key={pageKey} group={context.group} userId={user.userId} selectedSet={context.problemSet} onSelect={(item) => navigateAdmin(analysisProblemPath({ ...route, problemId: item.problemId }))} onBack={() => navigateAdmin(route.setId ? analysisGroupPath(route.groupId, 'problemsets') : `${analysisBase}/groups`)} onShowSets={() => navigateAdmin(analysisGroupPath(route.groupId, 'problemsets'))} onShowAll={() => navigateAdmin(analysisGroupPath(route.groupId))} />
+    content = <ProblemList onCreate={isAdmin ? () => navigateAdmin(`${managementBase}/problems/new`) : undefined} onEdit={isAdmin ? (item) => navigateAdmin(`${managementBase}/problems/${item.problemId}/edit`) : undefined} onEditSet={isAdmin ? (item) => navigateAdmin(`${managementBase}/problemsets/${item.setId}/edit`) : undefined} key={pageKey} group={context.group} userId={user.userId} selectedSet={context.problemSet} onSelect={(item) => navigateAdmin(analysisProblemPath({ ...route, problemId: item.problemId }))} onBack={() => navigateAdmin(route.setId ? analysisGroupPath(route.groupId, 'problemsets') : `${analysisBase}/groups`)} onShowSets={() => navigateAdmin(analysisGroupPath(route.groupId, 'problemsets'))} onShowAll={() => navigateAdmin(analysisGroupPath(route.groupId))} />
   } else if (route.page === 'detail') {
     content = <ProblemDetail key={pageKey} problemId={route.problemId} userId={user.userId} isSolved={context.problem.isSolved} onSubmit={() => navigateAdmin(analysisProblemPath(route, true))} onBack={() => navigateAdmin(analysisListPath(route))} backLabel={route.origin === 'submissions' ? '내 제출 목록' : undefined} />
   } else if (route.page === 'submit') {
@@ -124,7 +127,7 @@ export default function AnalysisApp({ submissionHistory, setSubmissionHistory })
     content = <SubmissionList key={pageKey} username={user.username} submissions={submissionHistory[user.userId] ?? []} loading={historyResult?.key !== historyKey} error={historyResult?.key === historyKey ? historyResult.error : null} onRefresh={() => setHistoryAttempt((value) => value + 1)} notice="서버에 저장된 내 제출 기록을 조회합니다." onOpenProblem={(item) => navigateAdmin(analysisProblemPath({ origin: 'submissions', problemId: item.problemId }))} onBack={() => navigateAdmin(group ? analysisGroupPath(group.groupId) : `${analysisBase}/groups`)} />
   }
 
-  return <AnalysisLayout route={route} user={user} group={group} problemSet={context.problemSet} problem={context.problem} onChangeUser={changeUser}>
+  return <AnalysisLayout canManage={group ? adminGroupIds.includes(group.groupId) : isAdmin} route={route} user={user} group={group} problemSet={context.problemSet} problem={context.problem} onChangeUser={changeUser}>
     {user && route.page !== 'entry' && route.page !== 'not-found' && <p className="analysis-scope-note">표시 기준: <strong>{user.username}</strong> 님의 풀이 현황</p>}
     {content}
   </AnalysisLayout>

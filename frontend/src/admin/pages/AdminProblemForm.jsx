@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button } from '../../design/ui.jsx'
+import { AsyncState, Button } from '../../design/ui.jsx'
 import MarkdownContent from '../../design/MarkdownContent.jsx'
 import AdminPageHeader from '../components/AdminPageHeader.jsx'
+import { navigateAdmin } from '../navigation.js'
 import { AdminLink } from '../routing.jsx'
 import { readAnalysisUser } from '../analysis/session.js'
-import { createAdminProblem } from '../api/problems.js'
+import { createAdminProblem, getEditableProblem, updateAdminProblem } from '../api/problems.js'
 import AuthorSelection from '../problem-editor/AuthorSelection.jsx'
 import { parseProblemMarkdown } from '../problem-editor/importMarkdown.js'
 import { formatFileSize, imageMarkdown, readImageFiles, readUtf8File, removeImageReferences, resolveAttachedImagePaths } from '../problem-editor/assets.js'
@@ -14,7 +15,11 @@ const fieldNames = { description: '문제 설명', input: '입력', output: '출
 const emptyDraft = () => ({ title: '', description: '', input: '', output: '', timeLimit: '1000', memoryLimit: '256', outputLimit: '1024', examples: [{ input: '', output: '' }], isPublic: false })
 const importPlaceholder = '# 문제 제목\n\n## 문제\n문제 설명을 Markdown으로 작성하세요.\n\n## 입력\n입력 형식\n\n## 출력\n출력 형식\n\n## 예제 입력 1\n```text\n2 3\n```\n\n## 예제 출력 1\n```text\n5\n```'
 
-export default function AdminProblemForm({ groupId }) {
+export default function AdminProblemForm({ groupId, problemId }) {
+  const editing = Boolean(problemId)
+  const listPath = `/admin/analysis/groups/${groupId}/problems`
+  const [loadState, setLoadState] = useState(null)
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [draft, setDraft] = useState(emptyDraft)
   const [user, setUser] = useState(readAnalysisUser)
   const [importText, setImportText] = useState('')
@@ -39,6 +44,18 @@ export default function AdminProblemForm({ groupId }) {
     active.current = true
     return () => { active.current = false; operation.current++ }
   }, [])
+
+  const loadKey = `${groupId}:${problemId}:${user?.userId}:${loadAttempt}`
+  useEffect(() => {
+    if (!editing || !user) return
+    const controller = new AbortController()
+    getEditableProblem(groupId, problemId, user.userId, controller.signal).then((problem) => {
+      if (controller.signal.aborted) return
+      setDraft({ title: problem.title, description: problem.description, input: problem.input, output: problem.output, examples: problem.examples.length ? problem.examples : [{ input: '', output: '' }], timeLimit: String(problem.limits.timeLimitMs), memoryLimit: String(problem.limits.memoryLimitMb), outputLimit: String(problem.limits.outputLimitKb), isPublic: problem.isPublic })
+      setAssets([]); setCsv(null); setSaved(null); setLoadState({ key: loadKey })
+    }, (failure) => { if (!controller.signal.aborted) setLoadState({ key: loadKey, error: failure.message }) })
+    return () => controller.abort()
+  }, [loadKey])
 
   function touch() { setSaved(null); setError('') }
 
@@ -146,11 +163,11 @@ export default function AdminProblemForm({ groupId }) {
       requestAnimationFrame(() => form.current?.reportValidity())
       return
     }
-    if (!csv) { setPreview(false); setError('테스트케이스 CSV 파일을 선택해 주세요.'); return }
+    if (!editing && !csv) { setPreview(false); setError('테스트케이스 CSV 파일을 선택해 주세요.'); return }
     busyRef.current = true
     setSaving(true)
     try {
-      const result = await createAdminProblem(groupId, {
+      const payload = {
         userId: user.userId,
         title: draft.title.trim(),
         description: resolveAttachedImagePaths(draft.description, assets),
@@ -158,9 +175,10 @@ export default function AdminProblemForm({ groupId }) {
         output: resolveAttachedImagePaths(draft.output, assets),
         examples: draft.examples.filter((example) => example.input !== '' || example.output !== ''),
         limits: { timeLimitMs: Number(draft.timeLimit), memoryLimitMb: Number(draft.memoryLimit), outputLimitKb: Number(draft.outputLimit) },
-        isPublic: draft.isPublic, testcasesCsv: csv.text,
+        isPublic: draft.isPublic, ...(csv ? { testcasesCsv: csv.text } : {}),
         assets: assets.map(({ id, filename, mimeType, dataBase64 }) => ({ id, filename, mimeType, dataBase64 })),
-      })
+      }
+      const result = editing ? await updateAdminProblem(groupId, problemId, payload) : await createAdminProblem(groupId, payload)
       if (active.current) setSaved(result)
     } catch (failure) {
       if (active.current) setError(failure.message)
@@ -169,9 +187,14 @@ export default function AdminProblemForm({ groupId }) {
     }
   }
 
+  if (editing && (!loadState || loadState.key !== loadKey || loadState.error)) return <section>
+    <AdminPageHeader title="문제 수정"><AdminLink className="btn secondary" to={listPath}>문제 목록</AdminLink></AdminPageHeader>
+    <div className="panel"><AsyncState loading={loadState?.key !== loadKey} error={loadState?.key === loadKey ? loadState.error : undefined} onRetry={() => setLoadAttempt((value) => value + 1)} /></div>
+  </section>
+
   return <section>
-    <AdminPageHeader title="문제 등록" description="AI가 작성한 Markdown을 가져오고 이미지와 테스트케이스를 함께 등록하세요.">
-      <AdminLink to={`/admin/groups/${groupId}/problems`} className="btn secondary">문제 목록</AdminLink>
+    <AdminPageHeader title={editing ? '문제 수정' : '문제 등록'} description="AI가 작성한 Markdown을 가져오고 이미지와 테스트케이스를 함께 등록하세요.">
+      <AdminLink to={listPath} className="btn secondary">문제 목록</AdminLink>
     </AdminPageHeader>
     <form ref={form} className="panel admin-form" onSubmit={save} noValidate aria-busy={busy}>
       <fieldset className="problem-editor-fieldset" disabled={busy}>
@@ -214,8 +237,8 @@ export default function AdminProblemForm({ groupId }) {
             <div><Button variant="secondary" disabled={draft.examples.length >= 100} onClick={() => { touch(); setDraft((current) => ({ ...current, examples: [...current.examples, { input: '', output: '' }] })) }}>예제 추가</Button></div>
           </div>
           <div className="admin-form-section">
-            <div className="admin-section-heading"><h3>채점 테스트케이스</h3><p>공개 예제와 별도로, 채점에 사용할 입력·정답을 CSV 파일로 올려 주세요.</p></div>
-            <div className="problem-editor-file-row"><div><label htmlFor="problem-testcases-csv">테스트케이스 CSV <span className="admin-required">필수</span></label><input id="problem-testcases-csv" type="file" accept=".csv,text/csv" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) readFile(() => readUtf8File(file, '.csv', 10 * 1024 * 1024), (text) => { if (!text.length) { setError('비어 있는 CSV 파일입니다.'); return } setCsv({ name: file.name, size: file.size, text }) }) }} /></div>{csv && <Button variant="secondary" onClick={() => { touch(); setCsv(null) }}>CSV 제거</Button>}</div>
+            <div className="admin-section-heading"><h3>채점 테스트케이스</h3><p>{editing ? '새 CSV를 올리면 기존 테스트케이스를 교체합니다. 선택하지 않으면 기존 테스트케이스를 유지합니다.' : '공개 예제와 별도로, 채점에 사용할 입력·정답을 CSV 파일로 올려 주세요.'}</p></div>
+            <div className="problem-editor-file-row"><div><label htmlFor="problem-testcases-csv">테스트케이스 CSV <span className="admin-required">{editing ? '교체 시 선택' : '필수'}</span></label><input id="problem-testcases-csv" type="file" accept=".csv,text/csv" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) readFile(() => readUtf8File(file, '.csv', 10 * 1024 * 1024), (text) => { if (!text.length) { setError('비어 있는 CSV 파일입니다.'); return } setCsv({ name: file.name, size: file.size, text }) }) }} /></div>{csv && <Button variant="secondary" onClick={() => { touch(); setCsv(null) }}>CSV 제거</Button>}</div>
             {csv && <p className="problem-editor-file-name" role="status">선택한 파일: <strong>{csv.name}</strong> · {formatFileSize(csv.size)}</p>}
             <p className="problem-editor-note">UTF-8 · 최대 10 MB. 첫 줄은 <code>input,output</code>입니다. 쉼표·따옴표·여러 줄 값은 CSV 따옴표 규칙을 사용하세요. 서버가 각 행을 검사해 테스트케이스로 저장합니다.</p>
           </div>
@@ -225,9 +248,9 @@ export default function AdminProblemForm({ groupId }) {
       <div className="admin-form-footer problem-editor-save-area">
         <p className="problem-editor-note">문제 본문·이미지와 CSV의 테스트케이스를 함께 등록합니다. {reading ? '파일을 읽고 있습니다.' : saving ? '서버에 등록하고 있습니다.' : '등록 전 미리보기와 공개 여부를 확인해 주세요.'}</p>
         {error && <p className="problem-editor-error" role="alert">{error}</p>}
-        <div className="problem-editor-save-actions"><Button variant="secondary" disabled={busy} onClick={() => setPreview((value) => !value)}>{preview ? '본문 수정' : '미리보기'}</Button><Button type="submit" disabled={busy || Boolean(saved)}>{saving ? '등록 중…' : saved ? '등록 완료' : '문제 등록'}</Button></div>
+        <div className="problem-editor-save-actions"><Button variant="secondary" disabled={busy} onClick={() => setPreview((value) => !value)}>{preview ? '본문 수정' : '미리보기'}</Button><Button type="submit" disabled={busy || Boolean(saved)}>{saving ? '저장 중…' : saved ? '저장 완료' : editing ? '수정 저장' : '문제 등록'}</Button></div>
       </div>
-      {saved && <div className="problem-editor-result" role="status"><h3>문제를 등록했습니다.</h3><p>문제 ID {saved.problemId} · 테스트케이스 {saved.testcaseCount}개 · {saved.isPublic ? '그룹 공개' : '비공개'}</p><div className="actions"><Button variant="secondary" onClick={resetDraft}>새 문제 작성</Button><AdminLink to={`/admin/groups/${groupId}/problems`} className="btn secondary">관리 목록</AdminLink>{saved.isPublic && <AdminLink to={`/admin/analysis/groups/${groupId}/problems/${saved.problemId}`} className="btn secondary">등록한 문제 보기</AdminLink>}</div></div>}
+      {saved && <div className="problem-editor-result" role="status"><h3>{editing ? '문제를 수정했습니다.' : '문제를 등록했습니다.'}</h3><p>문제 ID {saved.problemId}{saved.testcaseCount != null && ` · 테스트케이스 ${saved.testcaseCount}개`} · {saved.isPublic ? '그룹 공개' : '비공개'}</p><div className="actions"><Button variant="secondary" onClick={() => editing ? navigateAdmin(`/admin/groups/${groupId}/problems/new`) : resetDraft()}>새 문제 작성</Button><AdminLink to={listPath} className="btn secondary">문제 목록</AdminLink>{saved.isPublic && <AdminLink to={`/admin/analysis/groups/${groupId}/problems/${saved.problemId}`} className="btn secondary">등록한 문제 보기</AdminLink>}</div></div>}
     </form>
   </section>
 }

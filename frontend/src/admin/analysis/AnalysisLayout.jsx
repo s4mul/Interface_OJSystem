@@ -46,7 +46,7 @@ function Breadcrumbs({ route, group, problemSet, problem }) {
   </nav>
 }
 
-export default function AnalysisLayout({ route, user, group, problemSet, problem, children, onChangeUser }) {
+export default function AnalysisLayout({ route, user, group, problemSet, problem, children, onChangeUser, canManage = false }) {
   const main = useRef(null)
   const groupId = group?.groupId ?? route.groupId
   const groupBase = groupId ? `${base}/groups/${groupId}` : null
@@ -69,6 +69,7 @@ export default function AnalysisLayout({ route, user, group, problemSet, problem
     ['problems', '문제 목록', groupBase ? `${groupBase}/problems` : null],
     ['problemsets', '문제집 목록', groupBase ? `${groupBase}/problemsets` : null],
     ['submissions', '내 제출', `${base}/submissions`],
+    ...(canManage ? [['manage', '그룹 관리', groupId ? `/admin/groups/${groupId}` : null]] : []),
   ]
 
   return <div className="analysis-app">
@@ -87,7 +88,6 @@ export default function AnalysisLayout({ route, user, group, problemSet, problem
           <div className="account analysis-account">
             <span className="account-name" title={user.username}>{user.username} 님</span>
             <button type="button" className="account-button analysis-account-button" onClick={onChangeUser}>사용자 변경</button>
-            {groupId && <AdminLink to={`/admin/groups/${groupId}`} className="analysis-management-link">그룹 관리</AdminLink>}
           </div>
         </>}
       </div>

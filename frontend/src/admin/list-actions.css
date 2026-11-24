@@ -1,0 +1,22 @@
+/* Management controls stay inside the admin and analysis surfaces. */
+:is(.admin-app, .analysis-app) th.problem-select-column,
+:is(.admin-app, .analysis-app) td.problem-select-cell { width: 48px; padding: 12px; text-align: center; }
+:is(.admin-app, .analysis-app) .admin-assignment { padding: 20px 24px; margin-bottom: 20px; }
+:is(.admin-app, .analysis-app) .admin-assignment h2 { margin: 0 0 8px; font-size: 1rem; }
+:is(.admin-app, .analysis-app) .admin-assignment-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0 0; border: 0; margin: 0; min-width: 0; }
+:is(.admin-app, .analysis-app) .admin-assignment-controls select { flex: 1; min-width: 180px; max-width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: white; color: var(--navy); }
+:is(.admin-app, .analysis-app) .list-row-with-actions { padding: 0 25px 0 0; }
+:is(.admin-app, .analysis-app) .list-row-main { display: flex; flex: 1; min-width: 0; align-items: center; gap: 17px; border: 0; background: transparent; padding: 18px 25px; text-align: left; color: inherit; }
+:is(.admin-app, .analysis-app) th.management-column,
+:is(.admin-app, .analysis-app) td.management-cell { width: 92px; padding-left: 12px; padding-right: 12px; }
+:is(.admin-app, .analysis-app) .nav { min-width: 0; overflow-x: auto; }
+:is(.admin-app, .analysis-app) .intro > .actions { flex-wrap: wrap; }
+@media (max-width: 1200px) {
+  :is(.admin-app, .analysis-app) .topbar-inner { flex-wrap: wrap; }
+  :is(.admin-app, .analysis-app) .topbar-inner > .nav { order: 3; width: 100%; min-height: 48px; margin-left: 0; }
+  :is(.admin-app, .analysis-app) .topbar-inner > .account { margin-left: auto; }
+}
+@media (max-width: 600px) {
+  :is(.admin-app, .analysis-app) .list-row-with-actions { padding: 0 16px 0 0; gap: 8px; }
+  :is(.admin-app, .analysis-app) .list-row-main { padding: 16px; gap: 12px; }
+}

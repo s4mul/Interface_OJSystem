@@ -10,7 +10,6 @@ import { AdminLink } from '../routing.jsx'
 
 function SettingsForm({ group, userId }) {
   const [name, setName] = useState(group.groupName)
-  const [description, setDescription] = useState(group.description ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -22,8 +21,8 @@ function SettingsForm({ group, userId }) {
     if (pending.current || !name.trim()) return
     pending.current = true; setSaving(true); setError(''); setMessage('')
     try {
-      const saved = await updateAdminGroup(group.groupId, { userId, groupName: name.trim(), description: description.trim() ? description : null })
-      if (active.current) { setName(saved.groupName); setDescription(saved.description ?? ''); setMessage('그룹 설정을 저장했습니다.') }
+      const saved = await updateAdminGroup(group.groupId, { userId, groupName: name.trim() })
+      if (active.current) { setName(saved.groupName); setMessage('그룹 설정을 저장했습니다.') }
     } catch (failure) { if (active.current) setError(failure.message) }
     finally { pending.current = false; if (active.current) setSaving(false) }
   }
@@ -33,7 +32,6 @@ function SettingsForm({ group, userId }) {
       <div className="panel-head"><h2 className="panel-head-title">기본 정보</h2><span className="panel-head-info">그룹 ID {group.groupId}</span></div>
       <div className="admin-form-section">
         <div className="admin-field"><label htmlFor="admin-group-name">그룹 이름 필수</label><input id="admin-group-name" value={name} onChange={(e) => { setName(e.target.value); changed() }} required maxLength={100} /></div>
-        <div className="admin-field"><label htmlFor="admin-group-description">그룹 소개</label><textarea id="admin-group-description" value={description} onChange={(e) => { setDescription(e.target.value); changed() }} rows={5} maxLength={2000} /></div>
       </div>
     </fieldset>
     <div className="admin-form-footer"><div>{error && <p className="problem-editor-error" role="alert">{error}</p>}{message && <p role="status">{message}</p>}</div><div className="actions"><AdminLink to={'/admin/groups/' + group.groupId} className="btn secondary">관리 홈</AdminLink><Button type="submit" disabled={saving}>{saving ? '저장 중…' : '저장'}</Button></div></div>
@@ -43,7 +41,7 @@ export default function AdminSettings({ groupId }) {
   const [user, setUser] = useState(readAnalysisUser)
   const { data, loading, error, reload } = useAdminResource(getAdminGroup, groupId, user?.userId)
   return <section>
-    <AdminPageHeader title="그룹 설정" description="현재 그룹 정보를 불러오고 이름과 소개를 저장합니다." />
+    <AdminPageHeader title="그룹 설정" description="현재 그룹 정보를 불러오고 그룹 이름을 저장합니다." />
     <AdminUserPanel user={user} onUserChange={setUser} />
     {!user ? <div className="panel"><AdminEmpty title="관리자 이름을 조회해 주세요.">그룹 정보를 조회한 뒤 수정할 수 있습니다.</AdminEmpty></div> : data ? <SettingsForm key={groupId + ':' + user.userId} group={data} userId={user.userId} /> : <div className="panel"><AsyncState loading={loading} error={error} onRetry={reload} /></div>}
   </section>
