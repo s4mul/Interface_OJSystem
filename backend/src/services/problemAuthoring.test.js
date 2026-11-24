@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { createProblemAuthoringService, parseTestcasesCsv, validateDraft } = require('./problemAuthoring');
+const { createProblemAuthoringService, parseTestcasesCsv, validateDraft } = require('./admin/problemAuthoring');
 
 const temporaryBase = path.resolve(__dirname, '../../.authoring-test-work');
 const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1cAAAAASUVORK5CYII=';
