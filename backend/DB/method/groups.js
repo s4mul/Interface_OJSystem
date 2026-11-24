@@ -45,4 +45,26 @@ async function deleteGroup(groupid) {
     return result.affectedRows;
 }
 
-module.exports = { createGroup, getGroupById, getGroupsByUserId, updateGroup, deleteGroup };
+async function getGroupSetupForAdmin(groupid, userid) {
+    const [rows] = await pool.execute(
+        `SELECT g.groupid AS groupId, g.groupname AS groupName
+         FROM user_groups AS g
+         JOIN group_members AS gm ON gm.groupid = g.groupid
+         WHERE g.groupid = ? AND gm.userid = ? AND gm.isadmin = TRUE`,
+        [groupid, userid]
+    );
+    return rows[0] ?? null;
+}
+
+async function updateGroupSetupForAdmin(groupid, userid, groupname) {
+    const [result] = await pool.execute(
+        `UPDATE user_groups AS g
+         JOIN group_members AS gm ON gm.groupid = g.groupid
+         SET g.groupname = ?
+         WHERE g.groupid = ? AND gm.userid = ? AND gm.isadmin = TRUE`,
+        [groupname, groupid, userid]
+    );
+    return result.affectedRows;
+}
+
+module.exports = { createGroup, getGroupById, getGroupsByUserId, updateGroup, deleteGroup, getGroupSetupForAdmin, updateGroupSetupForAdmin };
