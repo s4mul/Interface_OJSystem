@@ -163,6 +163,84 @@ function createProblemAuthoringService({ repository, problemsRoot = path.resolve
         }
     }
 
+    async function update(groupValue, problemValue, body) {
+        const groupId = positiveId(groupValue, '그룹 ID');
+        const problemId = positiveId(problemValue, '문제 ID');
+        const draft = validateDraft(body);
+        const publishedPath = path.join(root, String(problemId));
+        let stagePath;
+        let backupDirectory;
+        let backupPath;
+        let originalMoved = false;
+        let newPublished = false;
+        let recoveryFailed = false;
+        async function restorePublished() {
+            try {
+                if (newPublished) { await removeOwnedDirectory(publishedPath); newPublished = false; }
+                if (originalMoved) { await fsImpl.rename(backupPath, publishedPath); originalMoved = false; }
+            } catch (error) { recoveryFailed = true; throw error; }
+        }
+        try {
+            const result = await repository.withTransaction(async (transaction) => {
+                if (!await transaction.isGroupAdmin(groupId, draft.userId)) throw new AuthoringError(403, '해당 그룹의 관리자만 문제를 수정할 수 있습니다.');
+                const problem = await transaction.getProblemForUpdate(groupId, problemId);
+                if (!problem) throw new AuthoringError(404, '이 그룹의 문제를 찾을 수 없습니다.');
+                if (problem.status !== 'READY') throw new AuthoringError(409, '등록이 완료된 문제만 수정할 수 있습니다.');
+                const testcases = body.testcasesCsv === undefined ? null : parseTestcasesCsv(body.testcasesCsv);
+                const canonicalRoot = await fsImpl.realpath(root);
+                if (await fsImpl.realpath(publishedPath) !== path.join(canonicalRoot, String(problemId))) throw new AuthoringError(409, '문제 저장 경로를 확인해 주세요.');
+                stagePath = await fsImpl.mkdtemp(path.join(root, '.update-'));
+                // Copy the existing files so an omitted CSV and existing images are preserved.
+                await fsImpl.cp(publishedPath, stagePath, { recursive: true });
+                for (const directory of ['content', 'limits', 'assets']) await fsImpl.mkdir(path.join(stagePath, directory), { recursive: true });
+                const replaceAssets = (value) => draft.assets.reduce((content, asset) => content.replaceAll(asset.relativePath, `/api/problems/${problemId}/assets/${asset.filename}`), value);
+                const content = { format: 'markdown', description: replaceAssets(draft.description), input: replaceAssets(draft.input), output: replaceAssets(draft.output), examples: draft.examples };
+                await fsImpl.writeFile(path.join(stagePath, 'content/problem.json'), `${JSON.stringify(content, null, 2)}\n`, 'utf8');
+                await fsImpl.writeFile(path.join(stagePath, 'limits/limits.json'), `${JSON.stringify(draft.limits, null, 2)}\n`, 'utf8');
+                for (const asset of draft.assets) await fsImpl.writeFile(path.join(stagePath, 'assets', asset.filename), asset.data);
+                if (testcases) {
+                    for (const directory of ['input', 'output']) {
+                        await fsImpl.rm(path.join(stagePath, directory), { recursive: true, force: true });
+                        await fsImpl.mkdir(path.join(stagePath, directory));
+                    }
+                    for (const [index, testcase] of testcases.entries()) {
+                        await fsImpl.writeFile(path.join(stagePath, 'input', String(index + 1)), testcase.input, 'utf8');
+                        await fsImpl.writeFile(path.join(stagePath, 'output', String(index + 1)), testcase.output, 'utf8');
+                    }
+                }
+                const testcaseCount = testcases?.length ?? (await fsImpl.readdir(path.join(stagePath, 'input'))).filter((name) => /^[1-9]\d*$/.test(name)).length;
+                if (!testcaseCount) throw new AuthoringError(409, '기존 테스트케이스를 확인해 주세요.');
+                backupDirectory = await fsImpl.mkdtemp(path.join(root, '.backup-'));
+                backupPath = path.join(backupDirectory, 'problem');
+                await fsImpl.rename(publishedPath, backupPath);
+                originalMoved = true;
+                await fsImpl.rename(stagePath, publishedPath);
+                newPublished = true;
+                stagePath = null;
+                await transaction.updateProblem(groupId, problemId, draft.title, draft.isPublic);
+                return { problemId, groupId, title: draft.title, status: 'READY', isPublic: draft.isPublic, testcaseCount };
+            }, restorePublished);
+            // A cleanup failure after commit must not turn a successful save into an error.
+            await removeOwnedDirectory(backupDirectory).catch((error) => console.error('Problem backup cleanup failed:', error.message));
+            return result;
+        } catch (error) {
+            if (recoveryFailed) {
+                console.error('Problem update restoration failed:', error.message);
+                throw new Error('문제 파일 복구가 필요합니다. 서버의 백업 파일을 확인해 주세요.');
+            }
+            try {
+                await restorePublished();
+            } catch (recoveryError) {
+                // Preserve the backup if restoration fails; never delete the only old copy.
+                console.error('Problem update restoration failed:', recoveryError.message);
+                throw new Error('문제 파일 복구가 필요합니다. 서버의 백업 파일을 확인해 주세요.');
+            }
+            if (stagePath) await removeOwnedDirectory(stagePath).catch(() => {});
+            if (backupDirectory) await removeOwnedDirectory(backupDirectory).catch(() => {});
+            throw error;
+        }
+    }
+
     async function list(groupValue, userValue) {
         const groupId = positiveId(groupValue, '그룹 ID');
         const userId = positiveId(userValue, '사용자 ID');
@@ -191,7 +269,7 @@ function createProblemAuthoringService({ repository, problemsRoot = path.resolve
         }
     }
 
-    return { create, list, publicAsset };
+    return { create, update, list, publicAsset };
 }
 
 module.exports = { AuthoringError, createProblemAuthoringService, parseTestcasesCsv, validateDraft };

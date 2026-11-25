@@ -20,6 +20,10 @@ function createProblemAuthoringRouters(options) {
         try { return res.json(await service.list(req.params.groupId, req.query.userId)); }
         catch (error) { return fail(res, error); }
     });
+    adminRouter.patch('/groups/:groupId/problems/:problemId', async (req, res) => {
+        try { return res.json(await service.update(req.params.groupId, req.params.problemId, req.body)); }
+        catch (error) { return fail(res, error); }
+    });
     assetRouter.get('/problems/:problemId/assets/:filename', async (req, res) => {
         try {
             const asset = await service.publicAsset(req.params.problemId, req.params.filename);
