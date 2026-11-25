@@ -42,13 +42,13 @@ export default function AdminProblemSetForm({ groupId, setId }) {
       const payload = { userId: user.userId, setName: name.trim(), description: description.trim() ? description : null }
       const result = editing ? await updateAdminProblemSet(groupId, setId, payload) : await createAdminProblemSet(groupId, payload)
       if (active.current) setSaved(result)
-    } catch (failure) { if (active.current) setError(failure.status === 404 && editing ? '문제집 수정 기능은 아직 사용할 수 없습니다.' : failure.message) }
+    } catch (failure) { if (active.current) setError(failure.message) }
     finally { pending.current = false; if (active.current) setSaving(false) }
   }
   if (editing && (loadState?.key !== loadKey || loadState.error)) return <section><AdminPageHeader title="문제집 수정"><AdminLink className="btn secondary" to={listPath}>문제집 목록</AdminLink></AdminPageHeader><div className="panel"><AsyncState loading={loadState?.key !== loadKey} error={loadState?.key === loadKey ? loadState.error : undefined} onRetry={() => setAttempt((value) => value + 1)} /></div></section>
   return <section>
-    <AdminPageHeader title={editing ? '문제집 수정' : '문제집 만들기'} description="문제집의 이름과 설명을 등록하세요. 문제는 전체 문제 목록에서 선택해 추가합니다." />
-    <p className="problem-editor-note"><AdminLink to={`/admin/analysis/groups/${groupId}/problems`}>전체 문제 목록에서 기존 문제 선택하기</AdminLink></p>
+    <AdminPageHeader title={editing ? '문제집 수정' : '문제집 만들기'} description="문제집의 이름과 설명을 등록하세요. 문제 구성은 ‘문제집 문제 목록 수정하기’에서 관리합니다." />
+    <p className="problem-editor-note"><AdminLink to={`/admin/analysis/groups/${groupId}/problems`}>전체 문제 목록으로 이동</AdminLink></p>
     <form className="panel admin-form" onSubmit={save} aria-busy={saving}>
       <fieldset className="problem-editor-fieldset" disabled={saving}>
         <div className="panel-head"><h2 className="panel-head-title">문제집 정보</h2><span className="panel-head-info">그룹 ID {groupId}</span></div>

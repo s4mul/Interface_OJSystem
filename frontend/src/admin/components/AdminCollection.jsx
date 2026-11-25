@@ -24,7 +24,7 @@ export default function AdminCollection({ groupId, type }) {
     if (pending.current) return
     pending.current = true; setUpdatingId(member.userId); setRoleError('')
     try { await updateAdminMember(groupId, member.userId, { userId: user.userId, isAdmin: !member.isAdmin }); reload() }
-    catch (failure) { setRoleError(failure.status === 404 ? '회원 권한 변경 기능은 아직 사용할 수 없습니다.' : failure.message) }
+    catch (failure) { setRoleError(failure.message) }
     finally { pending.current = false; setUpdatingId(null) }
   }
   return <section>

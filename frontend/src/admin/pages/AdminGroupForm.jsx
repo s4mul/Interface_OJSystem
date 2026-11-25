@@ -18,7 +18,7 @@ export default function AdminGroupForm() {
     if (pending.current || saved || !name.trim()) return
     pending.current = true; setSaving(true); setError('')
     try { setSaved(await createAdminGroup({ userId: user.userId, groupName: name.trim() })) }
-    catch (failure) { setError(failure.status === 404 ? '그룹 추가 기능은 아직 사용할 수 없습니다.' : failure.message) }
+    catch (failure) { setError(failure.message) }
     finally { pending.current = false; setSaving(false) }
   }
   return <section>

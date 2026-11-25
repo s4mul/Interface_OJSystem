@@ -45,6 +45,16 @@ export async function addProblemsToProblemSet(groupId, setId, payload) {
   if (!Number.isSafeInteger(addedCount) || addedCount < 0 || !Number.isSafeInteger(skippedCount) || skippedCount < 0 || addedCount + skippedCount !== payload.problemIds.length) throw new Error('추가 결과를 읽을 수 없습니다. 문제집에서 반영 여부를 확인해 주세요.')
   return { addedCount, skippedCount }
 }
+export async function getAdminProblemSetProblems(groupId, setId, userId, signal) {
+  const data = await request(`/api/admin/groups/${groupId}/problemsets/${setId}/problems?` + new URLSearchParams({ userId }), { signal })
+  if (data?.problemSet?.setId !== setId || data.problemSet.groupId !== groupId || !Array.isArray(data.problemIds) || !data.problemIds.every(isId) || new Set(data.problemIds).size !== data.problemIds.length) throw new Error('문제집의 기존 문제 구성을 읽을 수 없습니다.')
+  return data
+}
+export async function replaceProblemSetProblems(groupId, setId, payload) {
+  const data = await request(`/api/admin/groups/${groupId}/problemsets/${setId}/problems`, { method: 'PUT', body: payload })
+  if (!Number.isSafeInteger(data?.addedCount) || data.addedCount < 0 || !Number.isSafeInteger(data.removedCount) || data.removedCount < 0) throw new Error('저장 응답을 읽을 수 없습니다. 문제집에서 반영 여부를 확인해 주세요.')
+  return data
+}
 export async function getAdminMembers(groupId, userId, signal) {
   const data = await request('/api/admin/groups/' + groupId + '/members?' + new URLSearchParams({ userId }), { signal })
   if (!Array.isArray(data?.members) || !data.members.every((v) => isId(v?.userId) && typeof v.username === 'string' && typeof v.isAdmin === 'boolean')) throw new Error('서버의 멤버 목록을 읽을 수 없습니다.')

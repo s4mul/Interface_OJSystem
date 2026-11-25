@@ -7,7 +7,7 @@ import ProblemSetAssignment from './ProblemSetAssignment.jsx'
 function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets, onShowAll, onCreate, onEdit, onEditSet }) {
   const [result, setResult] = useState(null)
   const [attempt, setAttempt] = useState(0)
-  const [selection, setSelection] = useState([])
+  const [editingMembership, setEditingMembership] = useState(false)
   const [notice, setNotice] = useState('')
   const { groupId } = group
   const setId = selectedSet?.setId
@@ -31,11 +31,10 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets,
   }, [groupId, userId, setId, attempt])
 
   const { problemSet, problems, error } = result ?? {}
-  const canAssign = Boolean(onEdit && !selectedSet)
-  const selectedIds = (problems ?? []).filter((item) => selection.includes(item.problemId)).map((item) => item.problemId)
-  function assigned(saved, set, ids) {
-    setSelection((current) => current.filter((id) => !ids.includes(id)))
-    setNotice(`${set.setName}에 ${saved.addedCount}개 문제를 추가했습니다.${saved.skippedCount ? ` 이미 포함된 ${saved.skippedCount}개는 유지했습니다.` : ''}`)
+  function finishEditing(saved) {
+    setEditingMembership(false)
+    if (saved) setNotice(`${saved.setName}에 추가 ${saved.addedCount}개, 제외 ${saved.removedCount}개를 저장했습니다.`)
+    retry()
   }
   const title = selectedSet ? problemSet?.setName ?? selectedSet.setName : '문제 목록'
   const description = selectedSet
@@ -47,6 +46,8 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets,
     setAttempt((previous) => previous + 1)
   }
 
+  if (editingMembership) return <ProblemSetAssignment groupId={groupId} userId={userId} initialSetId={selectedSet?.setId} onClose={finishEditing} />
+
   return (
     <section aria-labelledby="problem-list-title">
       <div className="intro">
@@ -57,24 +58,24 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets,
         </div>
         <div className="actions">
           {!selectedSet && onCreate && <Button onClick={onCreate}>새 문제 등록</Button>}
-          {selectedSet && onEditSet && <Button variant="secondary" onClick={() => onEditSet(selectedSet)}>문제집 수정</Button>}
+          {onEdit && <Button variant="secondary" onClick={() => { setNotice(''); setEditingMembership(true) }}>문제집 문제 목록 수정하기</Button>}
+          {selectedSet && onEditSet && <Button variant="secondary" onClick={() => onEditSet(selectedSet)}>문제집 정보 수정</Button>}
           {onShowSets && <Button variant="secondary" onClick={onShowSets}>문제집 목록</Button>}
         </div>
       </div>
 
       {notice && <p role="status">{notice}</p>}
-      {canAssign && selectedIds.length > 0 && <ProblemSetAssignment groupId={groupId} userId={userId} problemIds={selectedIds} onAssigned={assigned} />}
 
       <div className="panel">
         {selectedSet && (
           <div className="selected-note">
             <span>{title}<span className="hint">선택한 문제집의 문제입니다.</span></span>
-            {onShowAll && <Button variant="secondary" onClick={onShowAll}>{onEdit ? '전체 문제 목록에서 추가' : '전체 문제 보기'}</Button>}
+            {onShowAll && <Button variant="secondary" onClick={onShowAll}>전체 문제 보기</Button>}
           </div>
         )}
         <div className="panel-head">
           <h2 className="panel-head-title">{selectedSet ? '문제집 문제 목록' : '전체 문제'}</h2>
-          <span className="panel-head-info">{problems ? `${problems.length}개 문제${canAssign ? ' · 선택해서 문제집에 추가' : ''}` : '문제 목록'}</span>
+          <span className="panel-head-info">{problems ? `${problems.length}개 문제` : '문제 목록'}</span>
         </div>
         <AsyncState
           loading={!result}
@@ -86,11 +87,10 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets,
         {problems?.length > 0 && (
           <div className="table-wrap">
             <table aria-label={`${title} 해결 현황`}>
-              <thead><tr>{canAssign && <th scope="col" className="problem-select-column"><input type="checkbox" aria-label="전체 문제 선택" checked={selectedIds.length === problems.length} ref={(element) => { if (element) element.indeterminate = selectedIds.length > 0 && selectedIds.length < problems.length }} onChange={(event) => { setNotice(''); setSelection(event.target.checked ? problems.map((item) => item.problemId) : []) }} /></th>}<th scope="col">번호</th><th scope="col">제목</th><th scope="col">해결 현황</th>{onEdit && <th scope="col" className="management-column">관리</th>}</tr></thead>
+              <thead><tr><th scope="col">번호</th><th scope="col">제목</th><th scope="col">해결 현황</th>{onEdit && <th scope="col" className="management-column">관리</th>}</tr></thead>
               <tbody>
                 {problems.map((problem) => (
                   <tr key={problem.problemId}>
-                    {canAssign && <td className="problem-select-cell"><input type="checkbox" aria-label={`${problem.title} 선택`} checked={selectedIds.includes(problem.problemId)} onChange={(event) => { setNotice(''); const checked = event.target.checked; setSelection((current) => checked ? [...new Set([...current, problem.problemId])] : current.filter((id) => id !== problem.problemId)) }} /></td>}
                     <td className="problem-id">{problem.problemId}</td>
                     <td>
                       <button className="problem-title" type="button" onClick={() => onSelect(problem)}>

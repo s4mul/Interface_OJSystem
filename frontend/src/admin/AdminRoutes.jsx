@@ -40,7 +40,7 @@ function ManagementPage({ route, pathname }) {
   const access = useManagementAccess(user?.userId, route.groupId)
   const Page = pages[route.page]
   let content
-  if (!user) content = <UserLookupForm onUserFound={(matched) => { rememberAnalysisUser(matched); setUser(matched) }} />
+  if (!user) content = <UserLookupForm initialName="" onUserFound={(matched) => { rememberAnalysisUser(matched); setUser(matched) }} />
   else if (access.loading || access.error) content = <section className="panel"><AsyncState loading={access.loading} error={access.error} onRetry={access.reload} /></section>
   else if (!access.isAdmin) content = <section className="panel admin-route-state"><h1>관리자 권한이 필요합니다.</h1><p>이 그룹의 관리자로 조회한 뒤 다시 시도해 주세요.</p><Button variant="secondary" onClick={() => { rememberAnalysisUser(null); setUser(null) }}>사용자 변경</Button></section>
   else content = <Page {...route} />
