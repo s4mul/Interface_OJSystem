@@ -1,5 +1,3 @@
-import { getProblem } from '../../api/getProblem.js'
-
 async function readResponse(response, fallback) {
   const data = await response.json().catch(() => null)
   if (!response.ok) throw new Error(typeof data?.error === 'string' ? data.error : fallback)
@@ -36,10 +34,19 @@ export async function getAdminProblems(groupId, userId, signal) {
 }
 
 export async function getEditableProblem(groupId, problemId, userId, signal) {
-  const [problem, problems] = await Promise.all([getProblem(problemId, userId, signal), getAdminProblems(groupId, userId, signal)])
-  const listed = problems.find((item) => item.problemId === problemId)
-  if (problem.groupId !== groupId || !listed) throw new Error('현재 그룹의 문제를 선택해 주세요.')
-  return { ...problem, isPublic: listed.isPublic }
+  const query = new URLSearchParams({ userId })
+  const response = await fetch(`/api/admin/groups/${groupId}/problems/${problemId}?${query}`, { signal }).catch((error) => {
+    if (signal?.aborted) throw error
+    throw new Error('문제 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+  })
+  const { problem } = await readResponse(response, '수정할 문제를 불러오지 못했습니다.')
+  if (problem?.problemId !== problemId || problem.groupId !== groupId || typeof problem.isPublic !== 'boolean' ||
+      typeof problem.title !== 'string' || typeof problem.description !== 'string' || typeof problem.input !== 'string' || typeof problem.output !== 'string' ||
+      !Array.isArray(problem.examples) || !problem.examples.every((example) => typeof example?.input === 'string' && typeof example.output === 'string') ||
+      ![problem.limits?.timeLimitMs, problem.limits?.memoryLimitMb, problem.limits?.outputLimitKb].every((limit) => Number.isFinite(limit) && limit > 0)) {
+    throw new Error('서버에서 받은 관리자 문제 정보를 읽을 수 없습니다.')
+  }
+  return problem
 }
 
 export async function updateAdminProblem(groupId, problemId, payload) {

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import GroupSelection from '../components/AdminGroupSelection.jsx'
 import ProblemList from '../components/AdminProblemList.jsx'
 import ProblemSetList from '../components/AdminProblemSetList.jsx'
+import MemberSubmissionCode from '../progress/MemberSubmissionCode.jsx'
+import MemberProblemSubmissions from '../progress/MemberProblemSubmissions.jsx'
 import ProblemDetail from '../../components/ProblemDetail.jsx'
 import SubmissionPanel from '../../components/SubmissionPanel.jsx'
 import SubmissionList from '../../components/SubmissionList.jsx'
@@ -15,11 +17,11 @@ import { AdminLink } from '../routing.jsx'
 import AnalysisLayout from './AnalysisLayout.jsx'
 import { loadAnalysisContext } from './context.js'
 import { readAnalysisUser, rememberAnalysisUser } from './session.js'
-import { analysisBase, analysisGroupPath, analysisListPath, analysisProblemPath, resolveAnalysisRoute } from './routes.js'
+import { analysisBase, analysisGroupPath, analysisListPath, analysisProblemPath, analysisMemberSubmissionsPath, analysisMemberSubmissionPath, resolveAnalysisRoute } from './routes.js'
 
 function useRouteContext(route, user, attempt) {
   const [result, setResult] = useState(null)
-  const key = [user?.userId, route.page, route.groupId, route.setId, route.problemId, route.origin, attempt].join(':')
+  const key = [user?.userId, route.page, route.groupId, route.setId, route.problemId, route.memberId, route.origin, attempt].join(':')
   const needsContext = user && !['entry', 'groups', 'submissions', 'not-found'].includes(route.page)
 
   useEffect(() => {
@@ -105,6 +107,11 @@ export default function AnalysisApp({ submissionHistory, setSubmissionHistory })
   const { isAdmin, adminGroupIds } = useManagementAccess(user?.userId, route.page === 'groups' ? null : group?.groupId)
   const managementBase = `/admin/groups/${group?.groupId}`
   const pageKey = `${user?.userId}:${pathname}`
+  function openMemberSubmissions(problem, member) {
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}#progress-${problem.problemId}`)
+    navigateAdmin(analysisMemberSubmissionsPath(route, problem.problemId, member.userId))
+  }
+  const memberBackPath = new URLSearchParams(window.location.search).get('from') === 'management' ? `/admin/groups/${route.groupId}/problems` : analysisListPath(route)
   let content
 
   if (route.page === 'not-found') {
@@ -118,7 +125,11 @@ export default function AnalysisApp({ submissionHistory, setSubmissionHistory })
   } else if (route.page === 'problemsets') {
     content = <ProblemSetList onCreate={isAdmin ? () => navigateAdmin(`${managementBase}/problemsets/new`) : undefined} onEdit={isAdmin ? (item) => navigateAdmin(`${managementBase}/problemsets/${item.setId}/edit`) : undefined} key={pageKey} group={context.group} groupId={route.groupId} userId={user.userId} onSelect={(item) => navigateAdmin(`${analysisGroupPath(route.groupId, 'problemsets')}/${item.setId}`)} onShowProblems={() => navigateAdmin(analysisGroupPath(route.groupId))} />
   } else if (route.page === 'problems' || route.page === 'set-problems') {
-    content = <ProblemList onCreate={isAdmin ? () => navigateAdmin(`${managementBase}/problems/new`) : undefined} onEdit={isAdmin ? (item) => navigateAdmin(`${managementBase}/problems/${item.problemId}/edit`) : undefined} onEditSet={isAdmin ? (item) => navigateAdmin(`${managementBase}/problemsets/${item.setId}/edit`) : undefined} key={pageKey} group={context.group} userId={user.userId} selectedSet={context.problemSet} onSelect={(item) => navigateAdmin(analysisProblemPath({ ...route, problemId: item.problemId }))} onBack={() => navigateAdmin(route.setId ? analysisGroupPath(route.groupId, 'problemsets') : `${analysisBase}/groups`)} onShowSets={() => navigateAdmin(analysisGroupPath(route.groupId, 'problemsets'))} onShowAll={() => navigateAdmin(analysisGroupPath(route.groupId))} />
+    content = <ProblemList onOpenMemberSubmissions={isAdmin ? openMemberSubmissions : undefined} onCreate={isAdmin ? () => navigateAdmin(`${managementBase}/problems/new`) : undefined} onEdit={isAdmin ? (item) => navigateAdmin(`${managementBase}/problems/${item.problemId}/edit`) : undefined} onEditSet={isAdmin ? (item) => navigateAdmin(`${managementBase}/problemsets/${item.setId}/edit`) : undefined} key={pageKey} group={context.group} userId={user.userId} selectedSet={context.problemSet} onSelect={(item) => navigateAdmin(analysisProblemPath({ ...route, problemId: item.problemId }))} onBack={() => navigateAdmin(route.setId ? analysisGroupPath(route.groupId, 'problemsets') : `${analysisBase}/groups`)} onShowSets={() => navigateAdmin(analysisGroupPath(route.groupId, 'problemsets'))} onShowAll={() => navigateAdmin(analysisGroupPath(route.groupId))} />
+  } else if (route.page === 'member-submissions') {
+    content = <MemberProblemSubmissions userId={user.userId} key={pageKey} group={context.group} problem={context.problem} memberId={route.memberId} onBack={() => navigateAdmin(`${memberBackPath}#progress-${route.problemId}`)} onOpenSubmission={(submission) => navigateAdmin(analysisMemberSubmissionPath(route, submission.submissionId) + window.location.search)} />
+  } else if (route.page === 'member-submission-code') {
+    content = <MemberSubmissionCode userId={user.userId} key={pageKey} group={context.group} problem={context.problem} memberId={route.memberId} submissionId={route.submissionId} onBack={() => navigateAdmin(analysisMemberSubmissionsPath(route, route.problemId, route.memberId) + window.location.search)} />
   } else if (route.page === 'detail') {
     content = <ProblemDetail key={pageKey} problemId={route.problemId} userId={user.userId} isSolved={context.problem.isSolved} onSubmit={() => navigateAdmin(analysisProblemPath(route, true))} onBack={() => navigateAdmin(analysisListPath(route))} backLabel={route.origin === 'submissions' ? '내 제출 목록' : undefined} />
   } else if (route.page === 'submit') {
@@ -128,7 +139,7 @@ export default function AnalysisApp({ submissionHistory, setSubmissionHistory })
   }
 
   return <AnalysisLayout canManage={group ? adminGroupIds.includes(group.groupId) : isAdmin} route={route} user={user} group={group} problemSet={context.problemSet} problem={context.problem} onChangeUser={changeUser}>
-    {user && route.page !== 'entry' && route.page !== 'not-found' && <p className="analysis-scope-note">표시 기준: <strong>{user.username}</strong> 님의 풀이 현황</p>}
+    {user && route.page !== 'entry' && route.page !== 'not-found' && !['member-submissions', 'member-submission-code'].includes(route.page) && <p className="analysis-scope-note">표시 기준: <strong>{user.username}</strong> 님의 풀이 현황</p>}
     {content}
   </AnalysisLayout>
 }

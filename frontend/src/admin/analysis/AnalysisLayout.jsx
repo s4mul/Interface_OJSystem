@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import logo from '../../design/assets/interface-logo.png'
 import { AdminLink } from '../routing.jsx'
 import './analysis.css'
+import { analysisMemberSubmissionsPath } from './routes.js'
 
 const base = '/admin/analysis'
 const titles = {
@@ -13,6 +14,8 @@ const titles = {
   detail: '문제 상세',
   submit: '코드 제출',
   submissions: '내 제출',
+  'member-submissions': '회원 제출',
+  'member-submission-code': '제출 코드',
   'not-found': '페이지를 찾을 수 없어요',
 }
 
@@ -20,7 +23,7 @@ function Breadcrumbs({ route, group, problemSet, problem }) {
   const groupId = group?.groupId ?? route.groupId
   const groupBase = groupId ? `${base}/groups/${groupId}` : null
   const isHistory = route.origin === 'submissions'
-  const hasProblem = ['detail', 'submit'].includes(route.page)
+  const hasProblem = ['detail', 'submit', 'member-submissions', 'member-submission-code'].includes(route.page)
   const hasSet = Boolean(route.setId)
   if (['entry', 'groups', 'submissions', 'not-found'].includes(route.page)) return null
   if (!groupBase && !isHistory) return null
@@ -41,6 +44,8 @@ function Breadcrumbs({ route, group, problemSet, problem }) {
     {hasProblem && <>
       <span aria-hidden="true">/</span>
       <span aria-current={route.page === 'detail' ? 'page' : undefined}>{problem?.title ?? `문제 ${route.problemId}`}</span>
+      {['member-submissions', 'member-submission-code'].includes(route.page) && <><span aria-hidden="true">/</span>{route.page === 'member-submission-code' ? <AdminLink to={analysisMemberSubmissionsPath(route, route.problemId, route.memberId) + window.location.search}>회원 제출</AdminLink> : <span aria-current="page">회원 제출</span>}</>}
+      {route.page === 'member-submission-code' && <><span aria-hidden="true">/</span><span aria-current="page">제출 #{route.submissionId}</span></>}
       {route.page === 'submit' && <><span aria-hidden="true">/</span><span aria-current="page">코드 제출</span></>}
     </>}
   </nav>
@@ -51,8 +56,8 @@ export default function AnalysisLayout({ route, user, group, problemSet, problem
   const groupId = group?.groupId ?? route.groupId
   const groupBase = groupId ? `${base}/groups/${groupId}` : null
   const isHistory = route.page === 'submissions' || route.origin === 'submissions'
-  const active = route.page === 'not-found' ? null : isHistory ? 'submissions' : ['problemsets', 'set-problems'].includes(route.page) || route.setId ? 'problemsets' : ['problems', 'detail', 'submit'].includes(route.page) ? 'problems' : 'groups'
-  const routeKey = [route.page, route.groupId, route.setId, route.problemId, route.origin].join(':')
+  const active = route.page === 'not-found' ? null : isHistory ? 'submissions' : ['problemsets', 'set-problems'].includes(route.page) || route.setId ? 'problemsets' : ['problems', 'detail', 'submit', 'member-submissions', 'member-submission-code'].includes(route.page) ? 'problems' : 'groups'
+  const routeKey = [route.page, route.groupId, route.setId, route.problemId, route.memberId, route.submissionId, route.origin].join(':')
   const title = route.page === 'set-problems' && problemSet ? problemSet.setName : titles[route.page] ?? '현황 분석'
 
   useEffect(() => {

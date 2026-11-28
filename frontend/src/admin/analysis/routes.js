@@ -20,6 +20,15 @@ export function resolveAnalysisRoute(pathname) {
   const groupId = positiveId(match?.[1])
   if (!groupId) return { page: 'not-found' }
   const suffix = match[2] ?? 'problems'
+  const memberHistory = suffix.match(/^(?:problemsets\/([^/]+)\/)?problems\/([^/]+)\/members\/([^/]+)\/submissions(?:\/([^/]+))?$/)
+  if (memberHistory) {
+    const setId = memberHistory[1] === undefined ? undefined : positiveId(memberHistory[1])
+    const problemId = positiveId(memberHistory[2])
+    const memberId = positiveId(memberHistory[3])
+    const submissionId = memberHistory[4] === undefined ? undefined : positiveId(memberHistory[4])
+    if (problemId && memberId && setId !== null && submissionId !== null) return { page: submissionId ? 'member-submission-code' : 'member-submissions', groupId, problemId, memberId, ...(setId ? { setId } : {}), ...(submissionId ? { submissionId } : {}) }
+    return { page: 'not-found', groupId }
+  }
   if (suffix === 'problems' || suffix === 'problemsets') return { page: suffix, groupId }
 
   const set = suffix.match(/^problemsets\/([^/]+)(?:\/problems\/([^/]+)(\/submit)?)?$/)
@@ -46,6 +55,14 @@ export function analysisProblemPath(route, submit = false) {
       ? `${analysisGroupPath(route.groupId, 'problemsets')}/${route.setId}`
       : `${analysisBase}/groups/${route.groupId}`
   return `${prefix}/problems/${route.problemId}${submit ? '/submit' : ''}`
+}
+
+export function analysisMemberSubmissionsPath(route, problemId, memberId) {
+  return `${analysisProblemPath({ ...route, problemId })}/members/${memberId}/submissions`
+}
+
+export function analysisMemberSubmissionPath(route, submissionId) {
+  return `${analysisMemberSubmissionsPath(route, route.problemId, route.memberId)}/${submissionId}`
 }
 
 export function analysisListPath(route) {

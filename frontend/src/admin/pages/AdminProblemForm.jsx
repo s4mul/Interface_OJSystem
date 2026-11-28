@@ -8,7 +8,7 @@ import { readAnalysisUser } from '../analysis/session.js'
 import { createAdminProblem, getEditableProblem, updateAdminProblem } from '../api/problems.js'
 import AuthorSelection from '../problem-editor/AuthorSelection.jsx'
 import { parseProblemMarkdown } from '../problem-editor/importMarkdown.js'
-import { formatFileSize, imageMarkdown, readImageFiles, readUtf8File, removeImageReferences, resolveAttachedImagePaths } from '../problem-editor/assets.js'
+import { formatFileSize, imageMarkdown, readImageFiles, readUtf8File, removeImageReferences, resolveAttachedImagePaths, resolveAdminImagePaths } from '../problem-editor/assets.js'
 import '../problem-editor/editor.css'
 
 const fieldNames = { description: '문제 설명', input: '입력', output: '출력' }
@@ -243,7 +243,7 @@ export default function AdminProblemForm({ groupId, problemId }) {
             <p className="problem-editor-note">UTF-8 · 최대 10 MB. 첫 줄은 <code>input,output</code>입니다. 쉼표·따옴표·여러 줄 값은 CSV 따옴표 규칙을 사용하세요. 서버가 각 행을 검사해 테스트케이스로 저장합니다.</p>
           </div>
         </div>
-        {preview && <div className="admin-problem-preview" aria-label="문제 미리보기"><div className="admin-preview-title"><h2>{draft.title || '제목 없는 문제'}</h2><div className="admin-preview-limits"><span>시간 제한 <strong>{draft.timeLimit || '—'} ms</strong></span><span>메모리 제한 <strong>{draft.memoryLimit || '—'} MB</strong></span><span>출력 제한 <strong>{draft.outputLimit || '—'} KB</strong></span></div></div>{Object.entries(fieldNames).map(([name, label]) => <section className="admin-preview-section" key={name}><h3>{label}</h3>{draft[name] ? <MarkdownContent assets={assets}>{draft[name]}</MarkdownContent> : <p className="problem-editor-preview-empty">작성한 내용이 없습니다.</p>}</section>)}{draft.examples.filter((example) => example.input !== '' || example.output !== '').map((example, index) => <div className="admin-preview-section admin-sample-grid" key={index}>{['input', 'output'].map((name) => <section className="admin-preview-sample" key={name}><h3>예제 {name === 'input' ? '입력' : '출력'} {index + 1}</h3><pre>{example[name] || ' '}</pre></section>)}</div>)}</div>}
+        {preview && <div className="admin-problem-preview" aria-label="문제 미리보기"><div className="admin-preview-title"><h2>{draft.title || '제목 없는 문제'}</h2><div className="admin-preview-limits"><span>시간 제한 <strong>{draft.timeLimit || '—'} ms</strong></span><span>메모리 제한 <strong>{draft.memoryLimit || '—'} MB</strong></span><span>출력 제한 <strong>{draft.outputLimit || '—'} KB</strong></span></div></div>{Object.entries(fieldNames).map(([name, label]) => <section className="admin-preview-section" key={name}><h3>{label}</h3>{draft[name] ? <MarkdownContent assets={assets}>{resolveAdminImagePaths(draft[name], groupId, problemId, user?.userId)}</MarkdownContent> : <p className="problem-editor-preview-empty">작성한 내용이 없습니다.</p>}</section>)}{draft.examples.filter((example) => example.input !== '' || example.output !== '').map((example, index) => <div className="admin-preview-section admin-sample-grid" key={index}>{['input', 'output'].map((name) => <section className="admin-preview-sample" key={name}><h3>예제 {name === 'input' ? '입력' : '출력'} {index + 1}</h3><pre>{example[name] || ' '}</pre></section>)}</div>)}</div>}
       </fieldset>
       <div className="admin-form-footer problem-editor-save-area">
         <p className="problem-editor-note">문제 본문·이미지와 CSV의 테스트케이스를 함께 등록합니다. {reading ? '파일을 읽고 있습니다.' : saving ? '서버에 등록하고 있습니다.' : '등록 전 미리보기와 공개 여부를 확인해 주세요.'}</p>

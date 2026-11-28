@@ -1,0 +1,69 @@
+.admin-progress-title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.admin-progress-title-row > .problem-title { min-width: 0; text-align: left; overflow-wrap: anywhere; }
+.admin-progress-toggle { display: inline-flex; align-items: center; flex: 0 0 auto; gap: 9px; border: 1px solid #dce4ef; border-radius: 8px; background: #f7f9fd; color: #53647f; padding: 8px 10px; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admin-progress-toggle:hover, .admin-progress-toggle.is-open { background: #edf3ff; border-color: #bbcde8; color: var(--navy); }
+.admin-progress-toggle strong { color: var(--navy); font-size: 14px; }
+.admin-progress-divider { padding: 0 5px; color: #a4afbe; }
+.admin-progress-unit { margin-left: 3px; font-size: 11px; }
+.admin-progress-meter { width: 35px; height: 5px; overflow: hidden; border-radius: 8px; background: #dfe6f1; }
+.admin-progress-meter > span { display: block; height: 100%; border-radius: inherit; background: #4a74b8; }
+.admin-progress-caret { display: inline-flex; transform: rotate(90deg); transition: transform .15s; }
+.admin-progress-toggle.is-open .admin-progress-caret { transform: rotate(-90deg); }
+.admin-progress-table .admin-progress-expanded-cell { width: auto; padding: 0; text-align: left; border-bottom: 1px solid var(--border); }
+.admin-progress-table th:first-child, .admin-progress-table td:first-child:not(.admin-progress-expanded-cell) { width: 95px; }
+.admin-progress-table th.admin-progress-own-status { width: 135px; }
+.admin-progress-details { background: #f5f7fb; padding: 22px; border-top: 1px solid #e4eaf4; }
+.admin-progress-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 17px; }
+.admin-progress-kicker { font-size: 11px; font-weight: 700; color: #7b8aa1; }
+.admin-progress-detail-head h3 { display: flex; flex-wrap: wrap; gap: 9px; margin: 5px 0 0; font-size: 15px; color: var(--navy); }
+.admin-progress-detail-head h3 > span { color: #75829a; font-size: 12px; font-weight: 500; align-self: center; }
+.admin-progress-detail-head > p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.admin-progress-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.admin-progress-category { min-width: 0; background: white; border: 1px solid #e1e7f0; border-radius: 10px; padding: 15px 12px 8px; }
+.admin-progress-category-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.admin-progress-category-head h4 { margin: 0; font-size: 13px; color: #36567e; }
+.admin-progress-category-head > span { border-radius: 5px; padding: 3px 6px; font-size: 11px; font-weight: 700; background: #edf2fa; color: #36567e; white-space: nowrap; }
+.admin-progress-category.solved .admin-progress-category-head h4 { color: #247764; }
+.admin-progress-category.solved .admin-progress-category-head > span { background: #e7f5ed; color: #247764; }
+.admin-progress-category.failed .admin-progress-category-head h4 { color: #94652b; }
+.admin-progress-category.failed .admin-progress-category-head > span { background: #fbf1e1; color: #94652b; }
+.admin-progress-category-hint { font-size: 10px; color: #8b97a9; margin: 7px 0 12px; line-height: 1.5; }
+.admin-progress-members { list-style: none; padding: 0; margin: 0; }
+.admin-progress-member { display: flex; width: 100%; align-items: center; gap: 8px; border: 0; border-top: 1px solid #f0f3f7; background: white; text-align: left; padding: 12px 2px; color: #7c8da4; border-radius: 3px; }
+.admin-progress-member:hover { background: #f5f8fe; }
+.admin-progress-avatar { display: grid; place-items: center; flex-shrink: 0; width: 29px; height: 29px; border-radius: 9px; background: #edf2f9; font-size: 11px; color: #52698c; font-weight: 750; }
+.admin-progress-member-body { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.admin-progress-member-body strong { color: #334867; font-size: 12px; font-weight: 700; }
+.admin-progress-member-body > span { font-size: 10px; color: #8a96a8; }
+.admin-progress-member-result .status { font-size: 10px; padding: 4px 6px; white-space: nowrap; }
+.admin-progress-unsubmitted { font-size: 10px; color: #8a96a8; white-space: nowrap; }
+.admin-progress-no-members { padding: 15px 0; font-size: 12px; color: var(--muted); text-align: center; }
+.admin-progress-legacy-item { list-style: none; }
+.admin-progress-legacy-item .problem-editor-problem-row { flex-wrap: wrap; }
+.admin-progress-legacy-item .admin-progress-toggle { flex: 0 0 auto; }
+.admin-member-history-context { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-bottom: 20px; font-size: 13px; color: var(--muted); }
+.admin-member-history-context strong { color: var(--navy); font-weight: 650; }
+@media (max-width: 900px) { .admin-progress-columns { grid-template-columns: 1fr; } .admin-progress-category-hint { font-size: 11px; } .admin-progress-member-body strong { font-size: 13px; } .admin-progress-details { padding: 16px; } .admin-progress-detail-head { flex-direction: column; align-items: flex-start; gap: 7px; } }
+@media (max-width: 600px) { .admin-progress-title-row { flex-direction: column; align-items: flex-start; gap: 9px; } .admin-progress-meter { display: none; } .admin-progress-table th:first-child, .admin-progress-table td:first-child:not(.admin-progress-expanded-cell) { width: 60px; padding-left: 10px; padding-right: 10px; } .admin-progress-table th.admin-progress-own-status { width: 100px; } }
+
+.admin-submission-link { border: 0; background: none; padding: 0; color: var(--navy); font-size: inherit; font-weight: 750; cursor: pointer; }
+.admin-submission-link:hover { text-decoration: underline; }
+.admin-code-link-label { display: block; color: #7387a7; font-size: 11px; font-weight: 500; margin-top: 4px; }
+.admin-code-metadata { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 20px 24px; margin: 0 0 22px; gap: 20px; }
+.admin-code-metadata dt { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.admin-code-metadata dd { margin: 0; color: var(--navy); font-size: 14px; font-weight: 650; }
+.admin-code-metadata time { font-size: 12px; font-weight: 500; }
+.admin-code-panel { overflow: hidden; }
+.admin-code-scroll { display: flex; overflow: auto; max-height: 65vh; min-height: 300px; background: #fbfcff; font: 13px/1.7 Consolas, 'Courier New', monospace; }
+.admin-code-lines { display: flex; flex-direction: column; flex-shrink: 0; position: sticky; left: 0; padding: 20px 14px; min-width: 48px; box-sizing: border-box; background: #f1f4f9; border-right: 1px solid #e3e8f0; color: #9aa7b9; text-align: right; user-select: none; }
+.admin-code-scroll pre { margin: 0; padding: 20px; overflow: visible; background: transparent; color: #304562; font: inherit; white-space: pre; tab-size: 4; flex-shrink: 0; }
+.admin-code-scroll code { padding: 0; background: none; font: inherit; color: inherit; }
+@media (max-width: 700px) { .admin-code-metadata { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 18px; gap: 20px; } }
+
+.admin-progress-refresh { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 16px; color: var(--muted); font-size: 12px; }
+.admin-progress-refresh p { margin: 0; line-height: 1.6; }
+.admin-progress-refresh .admin-progress-error { color: #b64444; margin-top: 5px; }
+.admin-progress-refresh > button { flex-shrink: 0; }
+.admin-progress-toggle:disabled { opacity: .6; cursor: wait; }
+.admin-progress-member-body strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 600px) { .admin-progress-refresh { align-items: flex-start; flex-direction: column; } }

@@ -2,6 +2,8 @@ import { getGroups } from '../../api/getGroups.js'
 import { getProblems } from '../../api/getProblems.js'
 import { getProblemSets } from '../../api/getProblemSets.js'
 import { getProblemSet } from '../../api/getProblemSet.js'
+import { getAdminProblems } from '../api/problems.js'
+import { getAdminProblemSetProblems } from '../api/management.js'
 import { getProblem } from '../../api/getProblem.js'
 
 export async function loadAnalysisContext(route, userId, signal) {
@@ -19,6 +21,17 @@ export async function loadAnalysisContext(route, userId, signal) {
     const sets = await getProblemSets(groupId, userId, signal)
     problemSet = sets.find((item) => item.setId === route.setId)
     if (!problemSet) throw new Error('이 그룹에 포함된 문제집을 선택해 주세요.')
+  }
+
+  if (['member-submissions', 'member-submission-code'].includes(route.page)) {
+    const problems = await getAdminProblems(groupId, userId, signal)
+    problem = problems.find((item) => item.problemId === route.problemId)
+    if (!problem) throw new Error('이 그룹에 포함된 문제를 선택해 주세요.')
+    if (route.setId) {
+      const data = await getAdminProblemSetProblems(groupId, route.setId, userId, signal)
+      if (!data.problemIds.includes(route.problemId)) throw new Error('이 문제집에 포함된 문제를 선택해 주세요.')
+    }
+    return { group, problemSet, problem }
   }
 
   if (route.problemId) {

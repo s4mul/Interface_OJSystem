@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-export function useAdminResource(load, groupId, userId) {
+export function useAdminResource(load, groupId, userId, resourceKey = '') {
   const [result, setResult] = useState(null)
   const [attempt, setAttempt] = useState(0)
-  const key = [groupId, userId, attempt].join(':')
+  const key = [groupId, userId, resourceKey, attempt].join(':')
   useEffect(() => {
     if (!userId) return
     const controller = new AbortController()
