@@ -62,10 +62,28 @@ async function deleteSubmission(submitid) {
     );
     return result.affectedRows;
 }
-
+async function getSubmissionByuserId(userid) {
+    const [rows] = await pool.execute(
+        `SELECT
+            s.submitid AS submissionId,
+            s.problemid AS problemId,
+            p.title AS title,
+            s.language AS language,
+            s.status AS result,
+            s.submitted_at AS submittedAt
+        FROM submissions AS s
+        INNER JOIN problems AS p
+            ON s.problemid = p.problemid
+        WHERE s.userid = ?
+        ORDER BY s.submitid DESC`,
+        [userid]
+    );
+    return rows;
+}
 module.exports = {
     createSubmission,
     getSubmissionById,
+    getSubmissionByuserId,
     updateSubmission,
     getPendingSubmissionIdsBefore,
     updatePendingSubmission,

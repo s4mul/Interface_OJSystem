@@ -5,6 +5,7 @@ const {
   getSubmissionById,
   getPendingSubmissionIdsBefore,
   updatePendingSubmission,
+  getSubmissionByuserId,
 } = require('../../DB/method/submissions');
 const JUDGE_SERVER_URL = process.env.JUDGE_SERVER_URL;
 const JUDGE_CALLBACK_TOKEN = process.env.JUDGE_CALLBACK_TOKEN;
@@ -166,6 +167,35 @@ router.post('/submissions', async (req, res) => {
   }
 });
 
+// GET /api/submissions?userId=...
+router.get('/submissions', async (req, res) => {
+  const value = typeof req.query.userId === 'string'
+    ? req.query.userId.trim()
+    : '';
+  const userId = Number(value);
+
+  if (
+    !/^\d+$/.test(value) ||
+    !Number.isSafeInteger(userId) ||
+    userId <= 0 ||
+    userId > 4294967295
+  ) {
+    return res.status(400).json({ error: '올바른 userId가 필요합니다.' });
+  }
+
+  if (typeof getSubmissionByuserId !== 'function') {
+    return res.status(500).json({ error: '제출 목록을 불러오지 못했습니다.' });
+  }
+
+  try {
+    const submissions = await getSubmissionByuserId(userId);
+    return res.status(200).json({ submissions });
+  } catch (error) {
+    console.error('Failed to fetch submissions:', error);
+    return res.status(500).json({ error: '제출 목록을 불러오지 못했습니다.' });
+  }
+});
+
 // GET /api/submissions/:id - fallback result lookup used when SSE disconnects.
 router.get('/submissions/:id', async (req, res) => {
   const submissionId = Number(req.params.id);
@@ -254,7 +284,7 @@ router.get('/submissions/:id/events', async (req, res) => {
   }
 });
 
-//결과 반환
+// 결과 반환
 router.post('/result', async (req, res) => {
   if (req.get('Authorization') !== `Bearer ${JUDGE_CALLBACK_TOKEN}`) {
     return res.status(401).json({ error: 'Unauthorized judge callback.' });
