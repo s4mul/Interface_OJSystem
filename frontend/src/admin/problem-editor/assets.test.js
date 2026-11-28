@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { imageMarkdown, removeImageReferences, resolveAttachedImagePaths } from './assets.js'
+import { imageMarkdown, removeImageReferences, resolveAttachedImagePaths, resolveAdminImagePaths } from './assets.js'
 
 const asset = { id: 'abc-123', path: 'images/abc-123.png', filename: 'diagram.png' }
 
@@ -34,4 +34,16 @@ test('removes generated references while keeping other images and code', () => {
   assert.equal(removeImageReferences(imageMarkdown(asset), asset), '')
   const source = '![inline](images/abc-123.png)\n![ref][fig]\n[fig]: <images/abc-123.png>\n![other](images/other.png)\n`![code](images/abc-123.png)`'
   assert.equal(removeImageReferences(source, asset), '\n\n\n![other](images/other.png)\n`![code](images/abc-123.png)`')
+})
+
+
+test('admin preview authorizes only this problem image URLs and preserves code and draft Markdown', () => {
+  const stored = '/api/problems/70/assets/diagram-1.png'
+  const authorized = '/api/admin/groups/2/problems/70/assets/diagram-1.png?userId=3'
+  const markdown = `![inline](${stored})\n![ref][fig]\n[fig]: <${stored}> "title"\n\n\`![code](${stored})\`\n\`\`\`md\n![code](${stored})\n\`\`\`\n![other](/api/problems/71/assets/diagram-1.png)`
+  assert.equal(resolveAdminImagePaths(markdown, 2, 70, 3), markdown
+    .replace(`![inline](${stored})`, `![inline](${authorized})`)
+    .replace(`[fig]: <${stored}>`, `[fig]: <${authorized}>`))
+  assert.equal(resolveAdminImagePaths(markdown, 2, undefined, 3), markdown)
+  assert.equal(resolveAdminImagePaths(markdown, 2, 70, undefined), markdown)
 })

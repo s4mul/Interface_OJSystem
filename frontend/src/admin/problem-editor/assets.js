@@ -95,6 +95,21 @@ export function resolveAttachedImagePaths(markdown, assets) {
   })
 }
 
+// Resolve stored images only for the editor preview; saved Markdown keeps its canonical URLs.
+export function resolveAdminImagePaths(markdown, groupId, problemId, userId) {
+  if (!groupId || !problemId || !userId) return markdown
+  function resolve(href) {
+    const source = unbracket(href)
+    const match = source.match(/^\/api\/problems\/([1-9]\d*)\/assets\/([A-Za-z0-9][A-Za-z0-9_-]{0,79}\.(?:png|jpg|gif|webp))$/)
+    if (!match || Number(match[1]) !== problemId) return href
+    const url = `/api/admin/groups/${groupId}/problems/${problemId}/assets/${match[2]}?${new URLSearchParams({ userId })}`
+    return href.startsWith('<') ? `<${url}>` : url
+  }
+  return mapOutsideCode(markdown, (line) => line
+    .replace(inlineImage, (_match, start, href, end) => `${start}${resolve(href)}${end}`)
+    .replace(referenceDefinition, (_match, start, _label, href, title, newline = '') => `${start}${resolve(href)}${title}${newline}`))
+}
+
 export function imageMarkdown(asset) {
   const label = asset.filename.replace(/\.[^.]+$/, '').replace(/[\[\]\\\r\n]/g, ' ').trim() || '이미지'
   return `![${label}](${asset.path})`

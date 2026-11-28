@@ -1,0 +1,16 @@
+{
+  "format": "markdown",
+  "description": "\n![image](/api/problems/10/assets/e3b338ae-136a-4d5c-84d0-b176a35d9f68.png)\n입력받은 문자열을 **그대로** 출력하세요.\n\n| 항목 | 설명 |\n| --- | --- |\n| 테스트 | 쉼표, 따옴표, 여러 줄, 빈 입력 |",
+  "input": "표준 입력 전체가 주어집니다.",
+  "output": "표준 입력을 변경하지 않고 출력합니다.",
+  "examples": [
+    {
+      "input": "hello,world\n",
+      "output": "hello,world\n"
+    },
+    {
+      "input": "second",
+      "output": "second"
+    }
+  ]
+}

@@ -1,16 +1,26 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { getProblemSet } from '../../api/getProblemSet'
 import { getProblems } from '../../api/getProblems'
 import { AsyncState, Button, StatusBadge } from '../../design/ui'
+import { ProgressToggle, ProgressDetails, ProgressRefresh, initialExpandedProblem } from '../progress/ProgressDisclosure.jsx'
+import { getGroupProblemProgress } from '../api/progress.js'
+import { useAdminResource } from '../api/useAdminResource.js'
 import ProblemSetAssignment from './ProblemSetAssignment.jsx'
 
-function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets, onShowAll, onCreate, onEdit, onEditSet }) {
+function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets, onShowAll, onCreate, onEdit, onEditSet, onOpenMemberSubmissions }) {
   const [result, setResult] = useState(null)
   const [attempt, setAttempt] = useState(0)
   const [editingMembership, setEditingMembership] = useState(false)
   const [notice, setNotice] = useState('')
+  const [openProgress, setOpenProgress] = useState(initialExpandedProblem)
+  const [progressVersion, setProgressVersion] = useState(0)
+  const showProgress = Boolean(onOpenMemberSubmissions)
   const { groupId } = group
   const setId = selectedSet?.setId
+  const progress = useAdminResource(getGroupProblemProgress, groupId, showProgress ? userId : null)
+  const progressById = new Map(progress.data?.problems.map((item) => [item.problemId, item.solvedCount]) ?? [])
+  function progressData(problemId) { return progress.data && progressById.has(problemId) ? { totalCount: progress.data.totalCount, solvedCount: progressById.get(problemId) } : null }
+  function refreshProgress() { progress.reload(); setProgressVersion((value) => value + 1); retry() }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -65,6 +75,7 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets,
       </div>
 
       {notice && <p role="status">{notice}</p>}
+      {showProgress && <ProgressRefresh loading={progress.loading} error={progress.error} onRefresh={refreshProgress} />}
 
       <div className="panel">
         {selectedSet && (
@@ -86,21 +97,21 @@ function ProblemList({ group, userId, selectedSet, onSelect, onBack, onShowSets,
         />
         {problems?.length > 0 && (
           <div className="table-wrap">
-            <table aria-label={`${title} 해결 현황`}>
-              <thead><tr><th scope="col">번호</th><th scope="col">제목</th><th scope="col">해결 현황</th>{onEdit && <th scope="col" className="management-column">관리</th>}</tr></thead>
+            <table className={showProgress ? 'admin-progress-table' : undefined} aria-label={`${title} 해결 현황`}>
+              <thead><tr><th scope="col">번호</th><th scope="col">제목</th><th scope="col" className={showProgress ? 'admin-progress-own-status' : undefined}>{showProgress ? '내 해결 현황' : '해결 현황'}</th>{onEdit && <th scope="col" className="management-column">관리</th>}</tr></thead>
               <tbody>
-                {problems.map((problem) => (
-                  <tr key={problem.problemId}>
+                {problems.map((problem) => <Fragment key={problem.problemId}>
+                  <tr>
                     <td className="problem-id">{problem.problemId}</td>
-                    <td>
-                      <button className="problem-title" type="button" onClick={() => onSelect(problem)}>
-                        {problem.title}
-                      </button>
-                    </td>
+                    <td><div className="admin-progress-title-row">
+                      <button className="problem-title" type="button" onClick={() => onSelect(problem)}>{problem.title}</button>
+                      {showProgress && <ProgressToggle problem={problem} data={progressData(problem.problemId)} loading={progress.loading} expanded={openProgress === problem.problemId} onToggle={() => setOpenProgress((current) => current === problem.problemId ? null : problem.problemId)} />}
+                    </div></td>
                     <td><StatusBadge solved={problem.isSolved} /></td>
                     {onEdit && <td className="management-cell"><Button variant="secondary" onClick={() => onEdit(problem)} aria-label={`${problem.title} 수정`}>수정</Button></td>}
                   </tr>
-                ))}
+                  {showProgress && openProgress === problem.problemId && <tr><td colSpan={onEdit ? 4 : 3} className="admin-progress-expanded-cell"><ProgressDetails groupId={groupId} userId={userId} refreshVersion={progressVersion} problem={problem} onOpenMember={onOpenMemberSubmissions} /></td></tr>}
+                </Fragment>)}
               </tbody>
             </table>
           </div>
