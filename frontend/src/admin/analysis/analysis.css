@@ -1,0 +1,50 @@
+.analysis-app { min-height: 100vh; }
+.analysis-app a { text-decoration: none; }
+.analysis-header-inner { gap: 16px; }
+.analysis-brand { color: var(--navy); }
+.analysis-area-label { padding: 6px 10px; border-radius: 6px; background: var(--navy-soft); color: var(--navy); font-size: .875rem; font-weight: 700; white-space: nowrap; }
+.analysis-nav { gap: 2px; }
+.analysis-nav-link { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; font-size: .875rem; padding: 0 11px; }
+.analysis-disabled { opacity: .48; cursor: default; }
+.analysis-account { gap: 10px; margin-left: 0; }
+.analysis-account .account-name { max-width: 100px; font-size: .875rem; }
+.analysis-account-button { font-size: .875rem; }
+.analysis-management-link { color: var(--muted); font-size: .875rem; font-weight: 650; white-space: nowrap; }
+.analysis-management-link:hover { color: var(--navy); text-decoration: underline; }
+.analysis-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; color: var(--muted); margin-bottom: 20px; font-size: .875rem; line-height: 1.7; overflow-wrap: anywhere; }
+.analysis-crumbs > * { min-width: 0; }
+.analysis-crumbs a { color: var(--navy); font-weight: 670; overflow-wrap: anywhere; }
+.analysis-crumbs a:hover { text-decoration: underline; }
+.analysis-main { min-height: calc(100vh - 180px); }
+.analysis-scope-note { margin: 0 0 24px; color: var(--muted); font-size: .875rem; line-height: 1.7; }
+.analysis-scope-note strong { color: var(--navy); }
+.analysis-route-state { padding: 28px; }
+.analysis-route-state > .actions { margin-top: 20px; }
+.analysis-route-state > .btn { margin-top: 22px; }
+.analysis-app .subtitle, .analysis-app .problem-prose { font-size: 1rem; }
+.analysis-app .field label, .analysis-app .form-label, .analysis-app .panel-head-info { font-size: .875rem; }
+.analysis-app .btn { font-size: .9375rem; }
+.analysis-app .login .field input { width: 100%; }
+@media (max-width: 1100px) {
+  .analysis-header-inner { flex-wrap: wrap; gap: 0 14px; }
+  .analysis-brand { padding: 12px 0; }
+  .analysis-nav { order: 3; margin: 0; width: 100%; min-height: 47px; height: auto; border-top: 1px solid #edf0f5; justify-content: flex-start; overflow-x: auto; }
+  .analysis-nav-link { min-height: 47px; padding: 0 19px; }
+  .analysis-nav-link:focus-visible { outline-offset: -3px; }
+  .analysis-account { margin-left: auto; }
+}
+@media (max-width: 980px) {
+  .analysis-header-inner { gap: 0 14px; }
+}
+@media (max-width: 600px) {
+  .analysis-header-inner { gap: 0 10px; }
+  .analysis-brand { max-width: 100%; }
+  .analysis-brand .brand-label { font-size: .8125rem; }
+  .analysis-area-label { font-size: .8125rem; padding: 5px 8px; }
+  .analysis-account { flex-wrap: wrap; gap: 10px; padding-bottom: 12px; }
+  .analysis-account-button { font-size: .875rem; padding: 7px 9px; }
+  .analysis-nav { gap: 0; }
+  .analysis-nav-link { padding: 0 14px; font-size: .875rem; }
+  .analysis-app .btn { font-size: .875rem; }
+  .analysis-main { margin-top: 24px; }
+}

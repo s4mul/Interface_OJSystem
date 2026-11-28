@@ -1,0 +1,67 @@
+.problem-editor-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.problem-editor-fieldset .admin-form-section { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.problem-editor-fieldset .admin-form-section > * { min-width: 0; }
+.problem-editor-fieldset:disabled { opacity: .75; }
+.problem-editor-import { background: #f8faff; }
+.problem-editor-import textarea, .problem-editor-markdown { font-family: var(--font-mono); tab-size: 4; }
+.problem-editor-inline-control { display: flex; align-items: stretch; gap: 10px; }
+.problem-editor-inline-control > input { flex: 1; min-width: 0; }
+.problem-editor-inline-control > .btn { flex: 0 0 auto; }
+.problem-editor-author { display: grid; gap: 10px; }
+.problem-editor-actions, .problem-editor-file-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.problem-editor-file-row { padding: 15px 17px; border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--surface); }
+.problem-editor-file-row > div { flex: 1; min-width: 0; }
+.problem-editor-file-row label { display: block; font-size: .875rem; font-weight: 730; margin-bottom: 8px; }
+.problem-editor-file-row input[type=file] { max-width: 100%; color: var(--muted); font-size: .875rem; }
+.problem-editor-file-row input[type=file]::file-selector-button { margin-right: 10px; padding: 8px 12px; background: white; color: var(--navy); border: 1px solid var(--border); border-radius: 7px; font: inherit; font-weight: 650; cursor: pointer; }
+.problem-editor-file-name, .problem-editor-note { font-size: .875rem; color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; margin: 0; }
+.problem-editor-note strong { color: var(--navy); }
+.problem-editor-note code { font-family: var(--font-mono); color: var(--navy); }
+.problem-editor-error { color: #a5343b; font-size: .9375rem; line-height: 1.7; margin: 0; overflow-wrap: anywhere; }
+.problem-editor-import-message { margin: 0; color: #2450a1; font-size: .875rem; line-height: 1.7; }
+.problem-editor-limit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.problem-editor-image-toolbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-control); background: #f8faff; }
+.problem-editor-image-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.problem-editor-image-item { display: flex; align-items: center; gap: 12px; min-width: 0; border: 1px solid var(--border); border-radius: var(--radius-control); padding: 10px 12px; background: white; }
+.problem-editor-image-item img { width: 54px; height: 48px; object-fit: contain; border-radius: 5px; background: #f1f4f9; }
+.problem-editor-image-item > div { min-width: 0; flex: 1; }
+.problem-editor-image-item strong { display: block; font-size: .875rem; color: var(--navy); overflow-wrap: anywhere; }
+.problem-editor-image-item .btn { padding: 8px 11px; }
+.problem-editor-example { display: grid; gap: 14px; }
+.problem-editor-example + .problem-editor-example { padding-top: 24px; border-top: 1px solid var(--border); }
+.problem-editor-example-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.problem-editor-example-heading h4 { margin: 0; color: var(--navy); font-size: 1rem; }
+.problem-editor-example-heading button { padding: 7px 11px; }
+.problem-editor-check { display: flex; align-items: flex-start; gap: 10px; font-size: .9375rem; line-height: 1.7; color: var(--text); }
+.problem-editor-check input { margin: 6px 0 0; width: 16px; height: 16px; accent-color: var(--navy); flex-shrink: 0; }
+.problem-editor-save-area { display: grid; gap: 14px; }
+.problem-editor-save-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.problem-editor-result { padding: 20px 24px; background: #edf7f0; color: #21603b; border-top: 1px solid #cde5d5; }
+.problem-editor-result h3 { margin: 0 0 8px; font-size: 1.0625rem; }
+.problem-editor-result p { margin: 0 0 12px; line-height: 1.7; font-size: .9375rem; }
+.problem-editor-result .actions a { background: white; }
+.problem-editor-preview-empty { color: var(--muted); font-size: .9375rem; margin: 0; }
+.problem-editor-list-author { margin-bottom: 24px; padding: 22px 24px; }
+.problem-editor-problem-list { list-style: none; margin: 0; padding: 0; }
+.problem-editor-problem-row { display: flex; align-items: center; gap: 15px; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+.problem-editor-problem-row:last-child { border-bottom: 0; }
+.problem-editor-problem-row > div { min-width: 0; flex: 1; }
+.problem-editor-problem-title { font-size: 1.0625rem; font-weight: 740; color: var(--navy); line-height: 1.6; overflow-wrap: anywhere; }
+.problem-editor-problem-title:hover:is(a) { text-decoration: underline; }
+.problem-editor-problem-meta { display: block; color: var(--muted); font-size: .875rem; line-height: 1.7; margin-top: 5px; }
+.problem-editor-visibility { color: #52637c; background: #edf0f5; border-radius: 20px; padding: 6px 11px; font-size: .875rem; font-weight: 650; white-space: nowrap; }
+.problem-editor-visibility.public { background: var(--navy-soft); color: var(--navy); }
+@media (max-width: 600px) {
+  .problem-editor-inline-control { flex-wrap: wrap; }
+  .problem-editor-inline-control > input { flex-basis: 100%; }
+  .problem-editor-inline-control > .btn { margin-left: auto; }
+  .problem-editor-limit-grid { grid-template-columns: 1fr; }
+  .problem-editor-file-row { padding: 14px; }
+  .problem-editor-image-toolbar { padding: 14px; }
+  .problem-editor-image-item { flex-wrap: wrap; }
+  .problem-editor-image-item > .btn { margin-left: auto; }
+  .problem-editor-image-item > div { flex-basis: calc(100% - 70px); }
+  .problem-editor-result { padding: 20px 18px; }
+  .problem-editor-list-author { padding: 20px 18px; }
+  .problem-editor-problem-row { padding: 18px 16px; gap: 10px; align-items: flex-start; }
+}
