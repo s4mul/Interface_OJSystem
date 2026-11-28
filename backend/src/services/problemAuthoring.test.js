@@ -159,3 +159,31 @@ test('base64 validation accepts a 5MiB image without stack overflow and rejects 
     assert.throws(() => validateDraft(draft({ assets: [{ ...asset, dataBase64: oversized.toString('base64') }] })), (error) => error.status === 413);
     assert.throws(() => validateDraft(draft({ assets: [{ ...asset, dataBase64: 'AB==' }] })), (error) => error.status === 400);
 });
+
+
+test('admin detail and images support private problems without exposing them publicly', async (t) => {
+    const { repo, service } = await fixture(t);
+    await service.create(2, draft({ isPublic: false, description: '![도형](images/diagram-1.png)', assets: [{ id: 'diagram-1', filename: '도형.png', mimeType: 'image/png', dataBase64: png }] }));
+    repo.isGroupAdmin = async (groupId, userId) => groupId === 2 && userId === 3;
+    const { problem } = await service.read('2', '70', '3');
+    assert.equal(problem.isPublic, false);
+    assert.equal(problem.description, '![도형](/api/problems/70/assets/diagram-1.png)');
+    assert.deepEqual(problem.examples, draft().examples);
+    assert.deepEqual(problem.limits, draft().limits);
+    assert.deepEqual((await service.adminAsset(2, 70, 3, 'diagram-1.png')).data, Buffer.from(png, 'base64'));
+    await assert.rejects(service.read(2, 70, 4), (error) => error.status === 403);
+    await assert.rejects(service.adminAsset(2, 70, 4, 'diagram-1.png'), (error) => error.status === 403);
+    await assert.rejects(service.publicAsset(70, 'diagram-1.png'), (error) => error.status === 404);
+    await assert.rejects(service.adminAsset(2, 70, 3, '../content/problem.json'), (error) => error.status === 404);
+});
+
+test('admin reads reject mismatched groups, missing or unfinished problems, and invalid IDs', async (t) => {
+    const { repo, service } = await fixture(t);
+    await service.create(2, draft({ isPublic: false }));
+    for (const load of [() => service.read(9, 70, 3), () => service.adminAsset(9, 70, 3, 'diagram-1.png'), () => service.read(2, 71, 3)]) {
+        await assert.rejects(load(), (error) => error.status === 404);
+    }
+    await assert.rejects(service.read(2, 70, undefined), (error) => error.status === 400);
+    repo.state.rows[0].status = 'DRAFT';
+    await assert.rejects(service.read(2, 70, 3), (error) => error.status === 404);
+});

@@ -20,6 +20,16 @@ function createProblemAuthoringRouters(options) {
         try { return res.json(await service.list(req.params.groupId, req.query.userId)); }
         catch (error) { return fail(res, error); }
     });
+    adminRouter.get('/groups/:groupId/problems/:problemId', async (req, res) => {
+        try { return res.set('Cache-Control', 'no-store').json(await service.read(req.params.groupId, req.params.problemId, req.query.userId)); }
+        catch (error) { return fail(res, error); }
+    });
+    adminRouter.get('/groups/:groupId/problems/:problemId/assets/:filename', async (req, res) => {
+        try {
+            const asset = await service.adminAsset(req.params.groupId, req.params.problemId, req.query.userId, req.params.filename);
+            return res.set({ 'Content-Type': asset.mimeType, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' }).send(asset.data);
+        } catch (error) { return fail(res, error); }
+    });
     adminRouter.patch('/groups/:groupId/problems/:problemId', async (req, res) => {
         try { return res.json(await service.update(req.params.groupId, req.params.problemId, req.body)); }
         catch (error) { return fail(res, error); }

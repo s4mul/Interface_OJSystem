@@ -248,11 +248,47 @@ function createProblemAuthoringService({ repository, problemsRoot = path.resolve
         return { problems: await repository.listProblems(groupId) };
     }
 
+    async function getManagedProblem(groupValue, problemValue, userValue) {
+        const groupId = positiveId(groupValue, '그룹 ID');
+        const problemId = positiveId(problemValue, '문제 ID');
+        const userId = positiveId(userValue, '사용자 ID');
+        if (!await repository.isGroupAdmin(groupId, userId)) throw new AuthoringError(403, '해당 그룹의 관리자만 문제를 조회할 수 있습니다.');
+        const problem = await repository.getProblemById(problemId);
+        if (!problem || problem.groupId !== groupId || problem.status !== 'READY') throw new AuthoringError(404, '이 그룹의 문제를 찾을 수 없습니다.');
+        return problem;
+    }
+
+    async function read(groupValue, problemValue, userValue) {
+        const problem = await getManagedProblem(groupValue, problemValue, userValue);
+        const directory = path.join(root, String(problem.problemId));
+        const [contentFile, limitsFile] = await Promise.all([
+            fsImpl.readFile(path.join(directory, 'content/problem.json'), 'utf8'),
+            fsImpl.readFile(path.join(directory, 'limits/limits.json'), 'utf8'),
+        ]);
+        const content = JSON.parse(contentFile);
+        const limits = JSON.parse(limitsFile);
+        if (typeof content?.description !== 'string' || typeof content.input !== 'string' || typeof content.output !== 'string' ||
+            !Array.isArray(content.examples) || !content.examples.every((example) => typeof example?.input === 'string' && typeof example.output === 'string') ||
+            ![limits?.timeLimitMs, limits?.memoryLimitMb, limits?.outputLimitKb].every((limit) => Number.isFinite(limit) && limit > 0)) {
+            throw new Error('Invalid problem content or limits.');
+        }
+        return { problem: { ...problem, description: content.description, input: content.input, output: content.output, examples: content.examples, limits } };
+    }
+
+    async function adminAsset(groupValue, problemValue, userValue, filename) {
+        const problem = await getManagedProblem(groupValue, problemValue, userValue);
+        return readAsset(problem.problemId, filename);
+    }
+
     async function publicAsset(problemValue, filename) {
         const problemId = positiveId(problemValue, '문제 ID');
-        if (typeof filename !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}\.(png|jpg|gif|webp)$/.test(filename)) throw new AuthoringError(404, '이미지를 찾을 수 없습니다.');
         const problem = await repository.getProblemById(problemId);
         if (!problem || problem.status !== 'READY' || !problem.isPublic) throw new AuthoringError(404, '이미지를 찾을 수 없습니다.');
+        return readAsset(problemId, filename);
+    }
+
+    async function readAsset(problemId, filename) {
+        if (typeof filename !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}\.(png|jpg|gif|webp)$/.test(filename)) throw new AuthoringError(404, '이미지를 찾을 수 없습니다.');
         try {
             const canonicalRoot = await fsImpl.realpath(root);
             const expectedAssetsPath = path.join(canonicalRoot, String(problemId), 'assets');
@@ -269,7 +305,7 @@ function createProblemAuthoringService({ repository, problemsRoot = path.resolve
         }
     }
 
-    return { create, update, list, publicAsset };
+    return { create, update, list, read, adminAsset, publicAsset };
 }
 
 module.exports = { AuthoringError, createProblemAuthoringService, parseTestcasesCsv, validateDraft };
